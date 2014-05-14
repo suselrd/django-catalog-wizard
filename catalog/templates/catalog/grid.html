@@ -1,0 +1,22 @@
+{% if is_grouped %}
+    <section>
+        {% for group in object_list %}
+            <h2>{{ group.group_obj }}</h2>
+            <section data-toggle="gridalicious" class="hide2">
+                {%  for object in group.object_list %}
+                    <article class="widget widget-heading-simple widget-body-white widget-pinterest">
+                        {% include object_template with object=object only%}
+                    </article>
+                {% endfor %}
+            </section>
+        {% endfor %}
+    </section>
+{% else %}
+    <section data-toggle="gridalicious" class="hide2">
+        {%  for object in object_list %}
+            <article class="widget widget-heading-simple widget-body-white widget-pinterest">
+                {% include object_template with object=object only%}
+            </article>
+        {% endfor %}
+    </section>
+{% endif %}
