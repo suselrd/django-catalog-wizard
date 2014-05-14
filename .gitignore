@@ -4,7 +4,6 @@
 *.bz2
 *~
 *.log
-*.json
 *.wsgi
 .idea/
 local_settings.py
