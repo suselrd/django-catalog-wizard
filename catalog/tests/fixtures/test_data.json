@@ -1,0 +1,83 @@
+[
+    {
+        "pk": 1,
+        "model": "auth.user",
+        "fields": {
+            "username": "pepe"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "tests.property",
+        "fields": {
+            "name": "Property 1",
+            "owner": 1
+        }
+    },
+    {
+        "pk": 2,
+        "model": "tests.property",
+        "fields": {
+            "name": "Property 2",
+            "owner": 1
+        }
+    },
+    {
+        "pk": 1,
+        "model": "tests.operationtype",
+        "fields": {
+            "name": "sale"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "tests.operationtype",
+        "fields": {
+            "name": "rent"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "tests.propertypublication",
+        "fields": {
+            "property": 1,
+            "operation_type" : 1,
+            "details": "bla bla bla",
+            "price": 10000
+        }
+    },
+    {
+        "pk": 2,
+        "model": "tests.propertypublication",
+        "fields": {
+            "property": 2,
+            "operation_type" : 2,
+            "details": "otro otro otro",
+            "price": 500
+        }
+    },
+    {
+        "pk": 1,
+        "model": "social_graph.edgetype",
+        "fields": {
+            "read_as": "likes",
+            "name": "Like"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "social_graph.edgetype",
+        "fields": {
+            "read_as": "is liked by",
+            "name": "Liked By"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "social_graph.edgetypeassociation",
+        "fields": {
+            "direct": 1,
+            "inverse": 2
+        }
+    }
+]
