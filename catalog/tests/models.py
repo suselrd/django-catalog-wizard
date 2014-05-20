@@ -16,7 +16,8 @@ class OperationType(models.Model):
 
 @catalogue_enabled
 class PropertyPublication(models.Model):
-    property = models.ForeignKey(Property)
+    property = models.ForeignKey(Property, related_name='publications')
     operation_type = models.ForeignKey(OperationType, related_name="publications_of_type")
     details = models.TextField(max_length=5000, null=True)
     price = models.DecimalField(max_digits=15, decimal_places=2)
+    status = models.CharField(max_length=10, choices=[(1, "PUBLIC"), (2, "PRIVATE")])

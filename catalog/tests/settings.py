@@ -66,7 +66,56 @@ CATALOGS = {
         },
         'DEFAULT_GROUP_BY': 'ungrouped',
         'GROUP_BY_OPTIONS': {
-            'ungrouped': None
+            'ungrouped': None,
+            'status': {
+                'type': 'catalog.groupings.AttributeValueGrouping',
+                'args': ['status'],
+                'kwargs': {
+                    'aggregate': {
+                        'total': {
+                            'type': 'Sum',
+                            'attribute': 'price'
+                        },
+                        'average': {
+                            'type': 'Avg',
+                            'attribute': 'price'
+                        }
+                    }
+                }
+
+            },
+            'owner': {
+                'type': 'catalog.groupings.AttributeValueGrouping',
+                'args': ['property__owner'],
+                'kwargs': {
+                    'aggregate': {
+                        'total': {
+                            'type': 'Sum',
+                            'attribute': 'price'
+                        },
+                        'average': {
+                            'type': 'Avg',
+                            'attribute': 'price'
+                        }
+                    }
+                }
+            },
+            'ownername': {
+                'type': 'catalog.groupings.AttributeValueGrouping',
+                'args': ['property__owner__username'],
+                'kwargs': {
+                    'aggregate': {
+                        'total': {
+                            'type': 'Sum',
+                            'attribute': 'price'
+                        },
+                        'average': {
+                            'type': 'Avg',
+                            'attribute': 'price'
+                        }
+                    }
+                }
+            }
         }
     }
 }

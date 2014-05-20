@@ -117,6 +117,28 @@ class TestCatalog(TestCase):
         self.assertIn('object_list', response.context_data)
         self.assertEqual(len(response.context_data['object_list']), 1)
 
+        data = {
+        }
+        response = c.get(reverse('property_catalog', kwargs={
+            'view_type': 'grid',
+            'group_by': 'owner'
+        }), data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('object_list', response.context_data)
+        self.assertEqual(len(response.context_data['object_list']), 1)
+        self.assertEqual(len(response.context_data['object_list'][0]['object_list']), 2)
+
+        response = c.get(reverse('property_catalog', kwargs={
+            'view_type': 'grid',
+            'group_by': 'ownername'
+        }), data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('object_list', response.context_data)
+        self.assertEqual(len(response.context_data['object_list']), 1)
+        self.assertEqual(len(response.context_data['object_list'][0]['object_list']), 2)
+
     def test_relation_existence_filter(self):
         article = PropertyPublication.objects.get(pk=1)
         user = User.objects.get(pk=1)
@@ -126,6 +148,7 @@ class TestCatalog(TestCase):
         data = {
             'liked_by': 1
         }
+        # test without grouping first
         response = c.get(reverse('property_catalog', kwargs={
             'view_type': 'grid',
             'group_by': 'ungrouped'
@@ -133,6 +156,16 @@ class TestCatalog(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('object_list', response.context_data)
         self.assertEqual(len(response.context_data['object_list']), 1)
+
+        # then, test with grouping
+        response = c.get(reverse('property_catalog', kwargs={
+            'view_type': 'grid',
+            'group_by': 'status'
+        }), data)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('object_list', response.context_data)
+        self.assertEqual(len(response.context_data['object_list']), 1)
+        self.assertEqual(len(response.context_data['object_list'][0]['object_list']), 1)
 
     def test_relation_attribute_range_filter(self):
         pass

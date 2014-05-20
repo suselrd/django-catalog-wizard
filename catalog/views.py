@@ -1,40 +1,13 @@
 # coding=utf-8
 from django.utils.module_loading import import_by_path
-from django.views.generic.list import MultipleObjectMixin, ListView
-
+from django.views.generic.list import ListView
 from . import CATALOGS
 from .filters import Filter
 from .filter_sets import FilterSet
+from .groupings import Grouping
 
 
-class FilteredListMixin(MultipleObjectMixin):
-    filters = FilterSet()
-
-    def get_queryset(self):
-        result = super(FilteredListMixin, self).get_queryset()
-        if self.model is None:
-            self.model = result.model
-        for f in self.filters:
-            result = f.filter(result)
-        return result
-
-
-class GroupedListMixin(MultipleObjectMixin):
-    grouper = None
-
-    def get_context_data(self, **kwargs):
-        context = super(GroupedListMixin, self).get_context_data(**kwargs)
-        if self.grouper:
-            new_object_list = self.grouper.group(context['object_list'])
-            context_object_name = self.get_context_object_name(context['object_list'])
-            context['object_list'] = new_object_list
-            context['is_grouped'] = True
-            if context_object_name:
-                context[context_object_name] = new_object_list
-        return context
-
-
-class CatalogView(FilteredListMixin, GroupedListMixin, ListView):
+class CatalogView(ListView):
     catalog = None
 
     def __init__(self, **kwargs):
@@ -42,7 +15,9 @@ class CatalogView(FilteredListMixin, GroupedListMixin, ListView):
         if self.catalog:
             self.catalog_config = CATALOGS[self.catalog]
             self.view_type = self.catalog_config['DEFAULT_VIEW_TYPE']
-            self.grouping_config = self.catalog_config['DEFAULT_GROUP_BY']
+            self.default_grouper = self.catalog_config['DEFAULT_GROUP_BY']
+            self.filters = FilterSet()
+            self.grouper = None
 
     def get(self, request, *args, **kwargs):
         self.filters = FilterSet()  # Reset filters
@@ -68,13 +43,39 @@ class CatalogView(FilteredListMixin, GroupedListMixin, ListView):
         except KeyError:
             pass
 
-        # get group_by
-        try:
-            self.grouper = self.catalog_config['GROUP_BY_OPTIONS'][self.kwargs['group_by']]
-        except KeyError:
-            self.grouper = self.catalog_config['GROUP_BY_OPTIONS'][self.grouping_config]
+        # get grouper
+        grouper_name = self.kwargs.setdefault('group_by', None)
+        if grouper_name is None or not grouper_name in self.catalog_config['GROUP_BY_OPTIONS']:
+            grouper_name = self.default_grouper
+        self.grouper = self.catalog_config['GROUP_BY_OPTIONS'][grouper_name]
+        if self.grouper and not isinstance(self.grouper, Grouping):
+            klass = import_by_path(self.grouper['type'])
+            args = self.grouper.setdefault('args', [])
+            kwargs = self.grouper.setdefault('kwargs', {})
+            self.grouper = self.catalog_config[grouper_name] = klass(*args, **kwargs)
 
         return super(CatalogView, self).get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        result = super(CatalogView, self).get_queryset()
+        if self.model is None:
+            self.model = result.model
+        # apply all filters
+        for f in self.filters:
+            result = f.filter(result)
+        # then return
+        return result
+
+    def get_context_data(self, **kwargs):
+        context = super(CatalogView, self).get_context_data(**kwargs)
+        if self.grouper:
+            context_object_name = self.get_context_object_name(context['object_list'])
+            self.groups = self.grouper.group(context['object_list'])
+            context['object_list'] = self.groups
+            if context_object_name:
+                context[context_object_name] = self.groups
+            context['is_grouped'] = True
+        return context
 
     def get_template_names(self):
         return self.catalog_config['VIEW_TYPES'][self.view_type]

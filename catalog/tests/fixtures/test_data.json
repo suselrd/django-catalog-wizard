@@ -43,7 +43,8 @@
             "property": 1,
             "operation_type" : 1,
             "details": "bla bla bla",
-            "price": 10000
+            "price": 10000,
+            "status": "PUBLIC"
         }
     },
     {
@@ -53,7 +54,8 @@
             "property": 2,
             "operation_type" : 2,
             "details": "otro otro otro",
-            "price": 500
+            "price": 500,
+            "status": "PRIVATE"
         }
     },
     {

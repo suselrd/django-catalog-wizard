@@ -1,7 +1,6 @@
 # coding=utf-8
 from django.conf import settings
 from social_graph import EdgeType, EdgeTypeAssociation, Graph
-from .groupings import Grouping
 
 HAVE_VALUE_EDGE_NAME = getattr(settings, 'HAVE_VALUE_EDGE_NAME', None)
 DESCRIBED_BY_EDGE_NAME = getattr(settings, 'DESCRIBED_BY_EDGE_NAME', None)
@@ -11,11 +10,30 @@ def inverse(edgeType):
     return EdgeTypeAssociation.objects.get(direct=edgeType).inverse
 
 
-class GraphGrouping(Grouping):
+# TODO: reimplement!!!
+class GraphGrouping(object):
 
     def __init__(self):
         super(GraphGrouping, self).__init__()
         self.graph = Graph()
+
+    def group(self, objects):
+        result = dict()
+        for obj in objects:
+            for group in self.memberships(obj):
+                if not str(group) in result:
+                    result[str(group)] = {
+                        'group_obj': group,
+                        'object_list': [],
+                        'count': 0
+                    }
+                result[str(group)]['object_list'].append(obj)
+                result[str(group)]['count'] += 1
+        result['group_list'] = [(key, value['count']) for key, value in result.iteritems()]
+        return result
+
+    def memberships(self, obj):
+        return []
 
 
 class RelationTargetGrouping(GraphGrouping):
