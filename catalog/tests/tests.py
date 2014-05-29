@@ -3,6 +3,7 @@ from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
+from django.views.generic import DetailView
 from social_graph import EdgeType, Graph
 from .models import PropertyPublication
 
@@ -184,3 +185,12 @@ class TestCatalog(TestCase):
 
     def test_custom_grouping(self):
         pass
+
+    def test_template_tag(self):
+        c = Client()
+        response = c.get(reverse('detail', kwargs={
+            'pk': 1,
+        }))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('object', response.context_data)
+        self.assertHTMLEqual("tests/grid.html", response.content)

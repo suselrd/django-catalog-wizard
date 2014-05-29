@@ -81,5 +81,14 @@
             "direct": 1,
             "inverse": 2
         }
+    },
+    {
+        "pk": 1,
+        "model": "catalog.modelcontexttemplate",
+        "fields": {
+            "model": "tests.propertypublication",
+            "context": "grid",
+            "template": "tests/grid.html"
+        }
     }
 ]
