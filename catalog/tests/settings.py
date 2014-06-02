@@ -116,7 +116,27 @@ CATALOGS = {
                     }
                 }
             }
-        }
+        },
+        'DEFAULT_ORDER_BY': 'none',
+        'ORDER_BY_OPTIONS': {
+            'none': None,
+            'price_asc': {
+                'type': 'catalog.sorters.AttributeValueSorter',
+                'args': ['price'],
+            },
+            'price_desc': {
+                'type': 'catalog.sorters.AttributeValueSorter',
+                'args': ['-price'],
+            },
+            'status_asc': {
+                'type': 'catalog.sorters.AttributeValueSorter',
+                'args': 'status'
+            },
+            'complex_order': {
+                'type': 'catalog.sorters.AttributeValueSorter',
+                'args': [('price', 'status')],
+            },
+        },
     }
 }
 

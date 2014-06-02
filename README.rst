@@ -17,6 +17,11 @@ The component integrates nicely with django-social-graph
 Changelog
 =========
 
+0.1.3
+-----
+Added support for sorting the result list, grouped or not.
+Pagination now takes place after grouping, so every group object list gets paginated individually.
+
 0.1.2
 -----
 Added custom template tag for getting the proper template to use for rendering a given object in a given context.

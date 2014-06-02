@@ -140,6 +140,57 @@ class TestCatalog(TestCase):
         self.assertEqual(len(response.context_data['object_list']), 1)
         self.assertEqual(len(response.context_data['object_list'][0]['object_list']), 2)
 
+        data = {
+            'order_by': 'price_asc'
+        }
+
+        response = c.get(reverse('property_catalog', kwargs={
+            'view_type': 'grid',
+            'group_by': 'ownername'
+        }), data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('object_list', response.context_data)
+        self.assertEqual(len(response.context_data['object_list']), 1)
+        self.assertEqual(len(response.context_data['object_list'][0]['object_list']), 2)
+        self.assertEqual(response.context_data['object_list'][0]['object_list'][0].price, 500)
+        self.assertEqual(response.context_data['is_grouped'], True)
+        self.assertEqual(response.context_data['object_list'][0]['is_sorted'], True)
+
+        data = {
+            'order_by': 'price_desc'
+        }
+
+        response = c.get(reverse('property_catalog', kwargs={
+            'view_type': 'grid',
+            'group_by': 'ownername'
+        }), data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('object_list', response.context_data)
+        self.assertEqual(len(response.context_data['object_list']), 1)
+        self.assertEqual(len(response.context_data['object_list'][0]['object_list']), 2)
+        self.assertEqual(response.context_data['object_list'][0]['object_list'][0].price, 10000)
+        self.assertEqual(response.context_data['is_grouped'], True)
+        self.assertEqual(response.context_data['object_list'][0]['is_sorted'], True)
+
+        data = {
+            'order_by': 'complex_order'
+        }
+
+        response = c.get(reverse('property_catalog', kwargs={
+            'view_type': 'grid',
+            'group_by': 'ownername'
+        }), data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('object_list', response.context_data)
+        self.assertEqual(len(response.context_data['object_list']), 1)
+        self.assertEqual(len(response.context_data['object_list'][0]['object_list']), 2)
+        self.assertEqual(response.context_data['object_list'][0]['object_list'][0].price, 500)
+        self.assertEqual(response.context_data['is_grouped'], True)
+        self.assertEqual(response.context_data['object_list'][0]['is_sorted'], True)
+
     def test_relation_existence_filter(self):
         article = PropertyPublication.objects.get(pk=1)
         user = User.objects.get(pk=1)
