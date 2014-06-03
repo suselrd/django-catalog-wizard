@@ -57,7 +57,16 @@ CATALOGS = {
             'liked_by': {
                 'type': 'catalog.graph_filters.RelationExistenceFilter',
                 'args': ['Liked By', 'django.contrib.auth.models.User']
-            }
+            },
+            'liked_by_between': {
+                'type': 'catalog.graph_filters.RelationTimeRangeFilter',
+                'args': ['Liked By', 'django.contrib.auth.models.User'],
+                'kwargs': {
+                    'children': {'liked_by_target': 'target_pk',
+                                 'liked_by_from': 'min_value',
+                                 'liked_by_to': 'max_value'}
+                }
+            },
         },
         'DEFAULT_VIEW_TYPE': 'grid',
         'VIEW_TYPES': {

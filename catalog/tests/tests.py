@@ -1,9 +1,10 @@
 # coding=utf-8
+import datetime
+import time
 from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
-from django.views.generic import DetailView
 from social_graph import EdgeType, Graph
 from .models import PropertyPublication
 
@@ -223,7 +224,25 @@ class TestCatalog(TestCase):
         pass
 
     def test_relation_time_range_filter(self):
-        pass
+        article = PropertyPublication.objects.get(pk=1)
+        user = User.objects.get(pk=1)
+        like = EdgeType.objects.get(pk=1)
+        from_datetime = datetime.datetime.now()
+        Graph().edge_add(user, article, like)
+        c = Client()
+        data = {
+            'liked_by_target': 1,
+            'liked_by_from': time.mktime(from_datetime.timetuple()),
+            'liked_by_to':  time.mktime(datetime.datetime.now().timetuple())
+        }
+        response = c.get(reverse('property_catalog', kwargs={
+            'view_type': 'grid',
+            'group_by': 'ungrouped'
+        }), data)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('object_list', response.context_data)
+        self.assertEqual(len(response.context_data['object_list']), 1)
+
 
     def test_custom_filter(self):
         pass

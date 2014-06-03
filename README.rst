@@ -17,6 +17,11 @@ The component integrates nicely with django-social-graph
 Changelog
 =========
 
+0.1.4
+-----
+Added support for using a FILTER & ORDER form with CatalogView
+Added support for compound filters
+
 0.1.3
 -----
 Added support for sorting the result list, grouped or not.

@@ -11,6 +11,10 @@ class Filter(object):
     required_args = []
     arg_types = {}
 
+    def __init__(self):
+        super(Filter, self).__init__()
+        self.applied = False
+
     def set_args(self, *args, **kwargs):
         self.args = dict()
         arg_count = 0
@@ -37,6 +41,10 @@ class Filter(object):
         return True
 
 
+class MultipleArgumentFilterMixin(object):
+    children = {}
+
+
 class AttributeValueFilter(Filter):
     required_args = ['value']
     arg_types = {'value': str}
@@ -58,6 +66,9 @@ class AttributeValueFilter(Filter):
     def _check(self, obj):
         return getattr(obj, self.attribute) == self.args['value']
 
+    def __unicode__(self):
+        return "%s: %s" % (self.attribute, self.args['value'])
+
 
 class ForeignKeyValueFilter(Filter):
     required_args = ['value']
@@ -77,6 +88,9 @@ class ForeignKeyValueFilter(Filter):
 
     def _check(self, obj):
         return getattr(obj, self.key) == self.args['value']
+
+    def __unicode__(self):
+        return "%s: %s" % (self.key, self.args['value'])
 
 
 class AttributeContainsFilter(Filter):
@@ -100,6 +114,9 @@ class AttributeContainsFilter(Filter):
 
     def _check(self, obj):
         return str(getattr(obj, self.attribute)).lower().find(self.args['keyword'].lower()) >= 0
+
+    def __unicode__(self):
+        return "%s" % (self.args['keyword'])
 
 
 class AttributeSetContainsFilter(Filter):
@@ -131,6 +148,9 @@ class AttributeSetContainsFilter(Filter):
                 return True
         return False
 
+    def __unicode__(self):
+        return "%s" % (self.args['keyword'])
+
 
 class AttributeMinLimitFilter(Filter):
     required_args = ['min_value']
@@ -150,6 +170,9 @@ class AttributeMinLimitFilter(Filter):
 
     def _check(self, obj):
         return self.args['min_value'] <= getattr(obj, self.attribute)
+
+    def __unicode__(self):
+        return "%s > %s" % (self.attribute, self.args['min_value'])
 
 
 class AttributeMaxLimitFilter(Filter):
@@ -171,14 +194,18 @@ class AttributeMaxLimitFilter(Filter):
     def _check(self, obj):
         return getattr(obj, self.attribute) <= self.args['max_value']
 
+    def __unicode__(self):
+        return "%s < %s" % (self.attribute, self.args['max_value'])
 
-class AttributeRangeFilter(Filter):
+
+class AttributeRangeFilter(Filter, MultipleArgumentFilterMixin):
     required_args = ['min_value', 'max_value']
     arg_types = {'min_value': float, 'max_value': float}
 
-    def __init__(self, attribute):
+    def __init__(self, attribute, children):
         super(AttributeRangeFilter, self).__init__()
         self.attribute = attribute
+        self.children = children
 
     def filter(self, objects):
         if isinstance(objects, QuerySet):
@@ -190,3 +217,6 @@ class AttributeRangeFilter(Filter):
 
     def _check(self, obj):
         return self.args['min_value'] <= getattr(obj, self.attribute) <= self.args['max_value']
+
+    def __unicode__(self):
+        return "%s > %s > %s" % (self.args['max_value'], self.attribute, self.args['min_value'])
