@@ -22,22 +22,34 @@ class GraphFilter(Filter):
         else:
             self.target_model = target_model
 
+    def _check_args(self):
+        super(GraphFilter, self)._check_args()
+        try:
+            self.args['target_pk'] = self.args['target_pk'].split(',')
+        except KeyError:
+            pass
+
 
 class RelationExistenceFilter(GraphFilter):
     required_args = ['target_pk']
     arg_types = {
-        'target_pk': int
+        'target_pk': str
     }
 
     def filter(self, objects, **kwargs):
         self._check_args()
-        self.target = self.target_model.objects.get(pk=self.args['target_pk'])
-        count = self.graph.edge_count(self.target, self.inverse_edge_type)
-        return list(set(objects) & set([node for node, attributes, time in
-                                        self.graph.edge_range(self.target,
-                                                              self.inverse_edge_type,
-                                                              0,
-                                                              count)]))
+        self.target = list()
+        subset = set(objects)
+        for target_pk in self.args['target_pk']:
+            target = self.target_model.objects.get(pk=target_pk)
+            self.target.append(target)
+            count = self.graph.edge_count(target, self.inverse_edge_type)
+            subset &= set([node for node, attributes, time in
+                          self.graph.edge_range(target,
+                          self.inverse_edge_type,
+                          0,
+                          count)])
+        return list(subset)
 
     def __unicode__(self):
         return "%s %s" % (self.edge_type, self.target)
@@ -46,22 +58,26 @@ class RelationExistenceFilter(GraphFilter):
 class ChildRelationExistenceFilter(GraphFilter):
     required_args = ['target_pk']
     arg_types = {
-        'target_pk': int
+        'target_pk': str
     }
 
-    def __init__(self, attribute, edge_type, target_model ):
+    def __init__(self, attribute, edge_type, target_model):
         super(ChildRelationExistenceFilter, self).__init__(edge_type, target_model)
         self.attribute = attribute
 
     def filter(self, objects, **kwargs):
         self._check_args()
-        self.target = self.target_model.objects.get(pk=self.args['target_pk'])
-        count = self.graph.edge_count(self.target, self.inverse_edge_type)
-        return list(set([getattr(obj, self.attribute) for obj in objects]) & set([node for node, attributes, time in
-                                                                                 self.graph.edge_range(self.target,
-                                                                                 self.inverse_edge_type,
-                                                                                 0,
-                                                                                 count)]))
+        self.target = list()
+        subset = set([getattr(obj, self.attribute) for obj in objects])
+        for target_pk in self.args['target_pk']:
+            target = self.target_model.objects.get(pk=target_pk)
+            self.target.append(target)
+            count = self.graph.edge_count(target, self.inverse_edge_type)
+            subset &= set([node for node, attributes, time in self.graph.edge_range(target,
+                                                                                    self.inverse_edge_type,
+                                                                                    0,
+                                                                                    count)])
+        return [obj for obj in objects if getattr(obj, self.attribute) in subset]
 
     def __unicode__(self):
         return "%s %s" % (self.edge_type, self.target)
@@ -70,7 +86,7 @@ class ChildRelationExistenceFilter(GraphFilter):
 class RelationAttributeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
     required_args = ['target_pk', 'min_value', 'max_value']
     arg_types = {
-        'target_pk': int,
+        'target_pk': str,
         'min_value': float,
         'max_value': float
     }
@@ -82,14 +98,20 @@ class RelationAttributeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
 
     def filter(self, objects, **kwargs):
         self._check_args()
-        self.target = self.target_model.objects.get(pk=self.args['target_pk'])
-        count = self.graph.edge_count(self.target, self.inverse_edge_type)
-        return list(set(objects) & set([node for node, attributes, time in
-                                        self.graph.edge_range(self.target,
-                                                              self.inverse_edge_type,
-                                                              0,
-                                                              count)
-                                        if self.args['min_value'] <= attributes[self.attribute] <= self.args['max_value']]))
+        self.target = list()
+        subset = set(objects)
+        for target_pk in self.args['target_pk']:
+            target = self.target_model.objects.get(pk=target_pk)
+            self.target.append(target)
+            count = self.graph.edge_count(target, self.inverse_edge_type)
+            subset &= set([node for node, attributes, time in
+                          self.graph.edge_range(target,
+                                                self.inverse_edge_type,
+                                                0,
+                                                count)
+                          if self.args['min_value'] <= attributes[self.attribute] <= self.args['max_value']])
+
+        return list(subset)
 
     def __unicode__(self):
         return "%s %s (%s < %s < %s)" % (self.edge_type,
@@ -102,7 +124,7 @@ class RelationAttributeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
 class ChildRelationAttributeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
     required_args = ['target_pk', 'min_value', 'max_value']
     arg_types = {
-        'target_pk': int,
+        'target_pk': str,
         'min_value': float,
         'max_value': float
     }
@@ -115,14 +137,19 @@ class ChildRelationAttributeRangeFilter(GraphFilter, MultipleArgumentFilterMixin
 
     def filter(self, objects, **kwargs):
         self._check_args()
-        self.target = self.target_model.objects.get(pk=self.args['target_pk'])
-        count = self.graph.edge_count(self.target, self.inverse_edge_type)
-        return list(set([getattr(obj, self.object_attribute) for obj in objects]) & set([node for node, attributes, time in
-                                                                                        self.graph.edge_range(self.target,
-                                                                                                              self.inverse_edge_type,
-                                                                                                              0,
-                                                                                                              count)
-                                                                                        if self.args['min_value'] <= attributes[self.attribute] <= self.args['max_value']]))
+        self.target = list()
+        subset = set([getattr(obj, self.attribute) for obj in objects])
+        for target_pk in self.args['target_pk']:
+            target = self.target_model.objects.get(pk=target_pk)
+            self.target.append(target)
+            count = self.graph.edge_count(target, self.inverse_edge_type)
+            subset &= set([node for node, attributes, time in
+                          self.graph.edge_range(target,
+                                                self.inverse_edge_type,
+                                                0,
+                                                count)
+                          if self.args['min_value'] <= attributes[self.attribute] <= self.args['max_value']])
+        return [obj for obj in objects if getattr(obj, self.attribute) in subset]
 
     def __unicode__(self):
         return "%s %s (%s < %s < %s)" % (self.edge_type,
@@ -135,7 +162,7 @@ class ChildRelationAttributeRangeFilter(GraphFilter, MultipleArgumentFilterMixin
 class RelationTimeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
     required_args = ['target_pk', 'min_value', 'max_value']
     arg_types = {
-        'target_pk': int,
+        'target_pk': str,
         'min_value': float,
         'max_value': float
     }
@@ -146,14 +173,19 @@ class RelationTimeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
 
     def filter(self, objects, **kwargs):
         self._check_args()
-        self.target = self.target_model.objects.get(pk=self.args['target_pk'])
-        count = self.graph.edge_count(self.target, self.inverse_edge_type)
-        return list(set(objects) & set([node for node, attributes, time in
-                                        self.graph.edge_time_range(self.target,
-                                                                   self.inverse_edge_type,
-                                                                   self.args['max_value'],
-                                                                   self.args['min_value'],
-                                                                   count)]))
+        self.target = list()
+        subset = set(objects)
+        for target_pk in self.args['target_pk']:
+            target = self.target_model.objects.get(pk=target_pk)
+            self.target.append(target)
+            count = self.graph.edge_count(target, self.inverse_edge_type)
+            subset &= set([node for node, attributes, time in
+                           self.graph.edge_time_range(target,
+                                                      self.inverse_edge_type,
+                                                      self.args['max_value'],
+                                                      self.args['min_value'],
+                                                      count)])
+        return list(subset)
 
     def __unicode__(self):
         return "%s %s (%s %s %s %s)" % (self.edge_type,
@@ -167,7 +199,7 @@ class RelationTimeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
 class ChildRelationTimeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
     required_args = ['target_pk', 'min_value', 'max_value']
     arg_types = {
-        'target_pk': int,
+        'target_pk': str,
         'min_value': float,
         'max_value': float
     }
@@ -179,14 +211,19 @@ class ChildRelationTimeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
 
     def filter(self, objects, **kwargs):
         self._check_args()
-        self.target = self.target_model.objects.get(pk=self.args['target_pk'])
-        count = self.graph.edge_count(self.target, self.inverse_edge_type)
-        return list(set([getattr(obj, self.attribute) for obj in objects]) & set([node for node, attributes, time in
-                                                                                 self.graph.edge_time_range(self.target,
-                                                                                                            self.inverse_edge_type,
-                                                                                                            self.args['max_value'],
-                                                                                                            self.args['min_value'],
-                                                                                                            count)]))
+        self.target = list()
+        subset = set([getattr(obj, self.attribute) for obj in objects])
+        for target_pk in self.args['target_pk']:
+            target = self.target_model.objects.get(pk=target_pk)
+            self.target.append(target)
+            count = self.graph.edge_count(target, self.inverse_edge_type)
+            subset &= set([node for node, attributes, time in
+                          self.graph.edge_time_range(target,
+                                                     self.inverse_edge_type,
+                                                     self.args['max_value'],
+                                                     self.args['min_value'],
+                                                     count)])
+        return [obj for obj in objects if getattr(obj, self.attribute) in subset]
 
     def __unicode__(self):
         return "%s %s (%s %s %s %s)" % (self.edge_type,

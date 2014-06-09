@@ -6,6 +6,20 @@
             "username": "pepe"
         }
     },
+        {
+        "pk": 2,
+        "model": "auth.user",
+        "fields": {
+            "username": "pedro"
+        }
+    },
+        {
+        "pk": 3,
+        "model": "auth.user",
+        "fields": {
+            "username": "maria"
+        }
+    },
     {
         "pk": 1,
         "model": "tests.property",

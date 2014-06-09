@@ -12,6 +12,17 @@ from .models import PropertyPublication
 class TestCatalog(TestCase):
     fixtures = ['test_data.json']
 
+    def setUp(self):
+        self.time0 = datetime.datetime.now()
+        self.user = User.objects.get(pk=1)
+        self.user2 = User.objects.get(pk=2)
+        self.user3 = User.objects.get(pk=3)
+        self.article = PropertyPublication.objects.get(pk=1)
+        self.like = EdgeType.objects.get(pk=1)
+        Graph().edge_add(self.user, self.article, self.like)
+        Graph().edge_add(self.user3, self.article, self.like)
+
+
     def test_basics(self):
         c = Client()
         response = c.get(reverse('property_catalog', kwargs={
@@ -193,13 +204,9 @@ class TestCatalog(TestCase):
         self.assertEqual(response.context_data['object_list'][0]['is_sorted'], True)
 
     def test_relation_existence_filter(self):
-        article = PropertyPublication.objects.get(pk=1)
-        user = User.objects.get(pk=1)
-        like = EdgeType.objects.get(pk=1)
-        Graph().edge_add(user, article, like)
         c = Client()
         data = {
-            'liked_by': 1
+            'liked_by': "1"
         }
         # test without grouping first
         response = c.get(reverse('property_catalog', kwargs={
@@ -220,19 +227,37 @@ class TestCatalog(TestCase):
         self.assertEqual(len(response.context_data['object_list']), 1)
         self.assertEqual(len(response.context_data['object_list'][0]['object_list']), 1)
 
+        # test with multi-target
+        data = {
+            'liked_by': "1,2"
+        }
+        response = c.get(reverse('property_catalog', kwargs={
+            'view_type': 'grid',
+            'group_by': 'ungrouped'
+        }), data)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('object_list', response.context_data)
+        self.assertEqual(len(response.context_data['object_list']), 0)
+
+        data = {
+            'liked_by': "1,3"
+        }
+        response = c.get(reverse('property_catalog', kwargs={
+            'view_type': 'grid',
+            'group_by': 'ungrouped'
+        }), data)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('object_list', response.context_data)
+        self.assertEqual(len(response.context_data['object_list']), 1)
+
     def test_relation_attribute_range_filter(self):
         pass
 
     def test_relation_time_range_filter(self):
-        article = PropertyPublication.objects.get(pk=1)
-        user = User.objects.get(pk=1)
-        like = EdgeType.objects.get(pk=1)
-        from_datetime = datetime.datetime.now()
-        Graph().edge_add(user, article, like)
         c = Client()
         data = {
-            'liked_by_target': 1,
-            'liked_by_from': time.mktime(from_datetime.timetuple()),
+            'liked_by_target': "1",
+            'liked_by_from': time.mktime(self.time0.timetuple()),
             'liked_by_to':  time.mktime(datetime.datetime.now().timetuple())
         }
         response = c.get(reverse('property_catalog', kwargs={
@@ -243,6 +268,32 @@ class TestCatalog(TestCase):
         self.assertIn('object_list', response.context_data)
         self.assertEqual(len(response.context_data['object_list']), 1)
 
+        # test with multi-target
+        data = {
+            'liked_by_target': "1,2",
+            'liked_by_from': time.mktime(self.time0.timetuple()),
+            'liked_by_to':  time.mktime(datetime.datetime.now().timetuple())
+        }
+        response = c.get(reverse('property_catalog', kwargs={
+            'view_type': 'grid',
+            'group_by': 'ungrouped'
+        }), data)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('object_list', response.context_data)
+        self.assertEqual(len(response.context_data['object_list']), 0)
+
+        data = {
+            'liked_by_target': "1,3",
+            'liked_by_from': time.mktime(self.time0.timetuple()),
+            'liked_by_to':  time.mktime(datetime.datetime.now().timetuple())
+        }
+        response = c.get(reverse('property_catalog', kwargs={
+            'view_type': 'grid',
+            'group_by': 'ungrouped'
+        }), data)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('object_list', response.context_data)
+        self.assertEqual(len(response.context_data['object_list']), 1)
 
     def test_custom_filter(self):
         pass
