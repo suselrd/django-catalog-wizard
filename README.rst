@@ -17,6 +17,11 @@ The component integrates nicely with django-social-graph
 Changelog
 =========
 
+0.1.5
+-----
+Graph filters now expects a comma separated target_pk argument, so we can filter objects according the existence
+(or attribute, or time of) their edges with multiple targets simultaneously.
+
 0.1.4
 -----
 Added support for using a FILTER & ORDER form with CatalogView

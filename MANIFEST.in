@@ -1,2 +1,4 @@
 include LICENSE AUTHORS.rst README.rst
+recursive-include catalog/templates *
+recursive-include catalog/templatetags *
 
