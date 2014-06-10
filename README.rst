@@ -17,6 +17,10 @@ The component integrates nicely with django-social-graph
 Changelog
 =========
 
+0.1.6
+-----
+ModelContextTemplate model registered for django admin.
+
 0.1.5
 -----
 Graph filters now expects a comma separated target_pk argument, so we can filter objects according the existence

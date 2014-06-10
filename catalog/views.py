@@ -1,5 +1,7 @@
 # coding=utf-8
-from catalog.exceptions import MissingFilterArgument, WrongTypeArgument
+from copy import copy
+from django.http import Http404
+from django.utils.translation import ugettext as _
 from django.utils.module_loading import import_by_path
 from django.views.generic.edit import FormMixin
 from django.views.generic.list import ListView
@@ -8,6 +10,7 @@ from .filters import Filter, MultipleArgumentFilterMixin
 from .filter_sets import FilterSet
 from .groupings import Grouping
 from .sorters import Sorter
+from .exceptions import MissingFilterArgument, WrongTypeArgument
 
 
 class CatalogView(ListView, FormMixin):
@@ -81,8 +84,8 @@ class CatalogView(ListView, FormMixin):
 
     def get(self, request, *args, **kwargs):
         # get REQUEST dict
-        request_dict = {}
-        request_dict.update(request.REQUEST)
+        self.request_dict = copy(request.GET) if len(request.GET) else copy(request.POST)
+        self.request_dict.pop('page', None)
 
         # instantiate form
         form_class = self.get_form_class()
@@ -126,10 +129,6 @@ class CatalogView(ListView, FormMixin):
                 raise Http404(_("Empty list and '%(class_name)s.allow_empty' is False.")
                         % {'class_name': self.__class__.__name__})
         context = self.get_context_data(form=self.form)
-        #if self.form:
-        #    context['cleaned_data'] = self.form.fields
-        #else:
-        #    context['cleaned_data'] = {}
         return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
@@ -195,7 +194,9 @@ class CatalogView(ListView, FormMixin):
                     'object_list': queryset
                 })
         context.update({
-            'applied_filters': [f for f in self.filters if f.applied]
+            'applied_filters': [f for f in self.filters if f.applied],
+            'request_dict': self.request_dict,
+            'query_string': self.request_dict.urlencode()
         })
         self.filters = FilterSet()  # reset filters
         return context
