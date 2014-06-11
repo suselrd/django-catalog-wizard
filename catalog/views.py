@@ -158,16 +158,6 @@ class CatalogView(ListView, FormMixin):
                 'grouper': self.grouper,
                 'is_grouped': True
             }
-            # paginate
-            if page_size:
-                for group in groups:
-                    paginator, page, queryset, is_paginated = self.paginate_queryset(group['object_list'], page_size)
-                    group.update({
-                        'paginator': paginator,
-                        'page_obj': page,
-                        'is_paginated': is_paginated,
-                        'object_list': queryset
-                    })
             # order
             if self.sorter:
                 for group in groups:
@@ -177,6 +167,23 @@ class CatalogView(ListView, FormMixin):
                         'is_sorted': True,
                         'object_list': queryset
                     })
+            # paginate
+            if page_size:
+                max_page = None
+                for group in groups:
+                    paginator, page, queryset, is_paginated = self.paginate_queryset(group['object_list'], page_size)
+                    group.update({
+                        'paginator': paginator,
+                        'page_obj': page,
+                        'is_paginated': is_paginated,
+                        'object_list': queryset
+                    })
+                    if page > max_page or max_page is None:
+                        max_page = page
+                context.update({
+                    'max_page': max_page
+                })
+
             context.update({
                 'object_list': groups
             })
@@ -184,15 +191,17 @@ class CatalogView(ListView, FormMixin):
                 context[context_object_name] = groups
             context.update(kwargs)
         else:
-            context = super(CatalogView, self).get_context_data(**kwargs)  # includes pagination stuff
             # order
             if self.sorter:
-                queryset = self.sorter.sort(context['object_list'])
-                context.update({
+                queryset = kwargs.pop('object_list', self.object_list)
+                queryset = self.sorter.sort(queryset)
+                kwargs.update({
                     'order': self.sorter,
                     'is_sorted': True,
                     'object_list': queryset
                 })
+            context = super(CatalogView, self).get_context_data(**kwargs)  # includes pagination stuff
+
         context.update({
             'applied_filters': [f for f in self.filters if f.applied],
             'request_dict': self.request_dict,

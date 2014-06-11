@@ -138,7 +138,7 @@ class ChildRelationAttributeRangeFilter(GraphFilter, MultipleArgumentFilterMixin
     def filter(self, objects, **kwargs):
         self._check_args()
         self.target = list()
-        subset = set([getattr(obj, self.attribute) for obj in objects])
+        subset = set([getattr(obj, self.object_attribute) for obj in objects])
         for target_pk in self.args['target_pk']:
             target = self.target_model.objects.get(pk=target_pk)
             self.target.append(target)
@@ -149,7 +149,7 @@ class ChildRelationAttributeRangeFilter(GraphFilter, MultipleArgumentFilterMixin
                                                 0,
                                                 count)
                           if self.args['min_value'] <= attributes[self.attribute] <= self.args['max_value']])
-        return [obj for obj in objects if getattr(obj, self.attribute) in subset]
+        return [obj for obj in objects if getattr(obj, self.object_attribute) in subset]
 
     def __unicode__(self):
         return "%s %s (%s < %s < %s)" % (self.edge_type,

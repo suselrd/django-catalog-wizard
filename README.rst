@@ -17,6 +17,11 @@ The component integrates nicely with django-social-graph
 Changelog
 =========
 
+0.1.7
+-----
+Fix pagination and ordering operations execution order.
+Fix in ChildRelationAttributeRangeFilter
+
 0.1.6
 -----
 ModelContextTemplate model registered for django admin.
