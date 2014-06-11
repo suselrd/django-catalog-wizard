@@ -33,7 +33,6 @@ class CatalogView(ListView, FormMixin):
         """
         Returns the keyword arguments for instantiating the form.
         """
-        data = {}
         for filter_name in self.filter_tray:
             filter_obj = self.filter_tray[filter_name]
             if not isinstance(filter_obj, Filter):
@@ -47,7 +46,6 @@ class CatalogView(ListView, FormMixin):
                 children_values = {}
                 for child, role in children.iteritems():
                     child_value = self.request.REQUEST.get(child)
-                    data[child] = child_value
                     if child_value:
                         children_values[role] = child_value
                 if len(children_values) == len(filter_obj.required_args):
@@ -57,20 +55,15 @@ class CatalogView(ListView, FormMixin):
                 value = self.request.REQUEST.getlist(filter_name)
                 value = [val for val in value if val]
                 if value:
-                    filter_obj.set_args(*value)
+                    value = ",".join(value)
+                    filter_obj.set_args(value)
                     self.filters.add_filter(filter_obj)
-                    if len(value) == 1:
-                        data[filter_name] = self.request.REQUEST.get(filter_name)
-                    else:
-                        data[filter_name] = self.request.REQUEST.getlist(filter_name)
 
         if self.order_field:
             sorter_name = self.kwargs.setdefault('order_by',  # first from URL kwargs
                                                  self.request.REQUEST.get(self.order_field, None))  # then from REQUEST
             if sorter_name is None or not sorter_name in self.catalog_config['ORDER_BY_OPTIONS']:
                 sorter_name = self.default_order
-
-            data[self.order_field] = sorter_name
 
             self.sorter = self.catalog_config['ORDER_BY_OPTIONS'][sorter_name]
             if self.sorter and not isinstance(self.sorter, Sorter):
@@ -80,7 +73,7 @@ class CatalogView(ListView, FormMixin):
                 self.sorter = self.catalog_config[sorter_name] = klass(*args, **kwargs)
 
         return {'initial': self.get_initial(),
-                'data': data}
+                'data': self.request_dict}
 
     def get(self, request, *args, **kwargs):
         # get REQUEST dict
