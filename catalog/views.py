@@ -171,7 +171,7 @@ class CatalogView(ListView, FormMixin):
                         'is_paginated': is_paginated,
                         'object_list': queryset
                     })
-                    if page > max_page or max_page is None:
+                    if max_page is None or page.paginator.num_pages > max_page.paginator.num_pages:
                         max_page = page
                 context.update({
                     'max_page': max_page
