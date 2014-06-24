@@ -17,6 +17,10 @@ The component integrates nicely with django-social-graph
 Changelog
 =========
 
+0.1.10
+-----
+Added kwargs to all filters init method.
+
 0.1.9
 -----
 Fix in CatalogView's max_page determination for grouped lists.

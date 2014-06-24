@@ -11,7 +11,7 @@ def inverse(et):
 
 class GraphFilter(Filter):
 
-    def __init__(self, edge_type, target_model):
+    def __init__(self, edge_type, target_model, **kwargs):
         super(GraphFilter, self).__init__()
         self.graph = Graph()
         self.edge_type = EdgeType.objects.get(name=edge_type)
@@ -61,7 +61,7 @@ class ChildRelationExistenceFilter(GraphFilter):
         'target_pk': str
     }
 
-    def __init__(self, attribute, edge_type, target_model):
+    def __init__(self, attribute, edge_type, target_model, **kwargs):
         super(ChildRelationExistenceFilter, self).__init__(edge_type, target_model)
         self.attribute = attribute
 
@@ -91,7 +91,7 @@ class RelationAttributeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
         'max_value': float
     }
 
-    def __init__(self, edge_type, target_model, attribute, children):
+    def __init__(self, edge_type, target_model, attribute, children, **kwargs):
         super(RelationAttributeRangeFilter, self).__init__(edge_type, target_model)
         self.attribute = attribute
         self.children = children
@@ -129,7 +129,7 @@ class ChildRelationAttributeRangeFilter(GraphFilter, MultipleArgumentFilterMixin
         'max_value': float
     }
 
-    def __init__(self, object_attribute, edge_type, target_model, attribute, children):
+    def __init__(self, object_attribute, edge_type, target_model, attribute, children, **kwargs):
         super(ChildRelationAttributeRangeFilter, self).__init__(edge_type, target_model)
         self.object_attribute = object_attribute
         self.attribute = attribute
@@ -167,7 +167,7 @@ class RelationTimeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
         'max_value': float
     }
 
-    def __init__(self, edge_type, target_model, children):
+    def __init__(self, edge_type, target_model, children, **kwargs):
         super(RelationTimeRangeFilter, self).__init__(edge_type, target_model)
         self.children = children
 
@@ -204,7 +204,7 @@ class ChildRelationTimeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
         'max_value': float
     }
 
-    def __init__(self, attribute, edge_type, target_model, children):
+    def __init__(self, attribute, edge_type, target_model, children, **kwargs):
         super(ChildRelationTimeRangeFilter, self).__init__(edge_type, target_model)
         self.attribute = attribute
         self.children = children

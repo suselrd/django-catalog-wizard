@@ -11,7 +11,7 @@ class Filter(object):
     required_args = []
     arg_types = {}
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         super(Filter, self).__init__()
         self.applied = False
 
@@ -49,7 +49,7 @@ class AttributeValueFilter(Filter):
     required_args = ['value']
     arg_types = {'value': str}
 
-    def __init__(self, attribute, atype=str):
+    def __init__(self, attribute, atype=str, **kwargs):
         super(AttributeValueFilter, self).__init__()
         self.attribute = attribute
         if atype != str:
@@ -74,7 +74,7 @@ class ForeignKeyValueFilter(Filter):
     required_args = ['value']
     arg_types = {'value': int}
 
-    def __init__(self, key):
+    def __init__(self, key, **kwargs):
         super(ForeignKeyValueFilter, self).__init__()
         self.key = key
 
@@ -97,7 +97,7 @@ class AttributeContainsFilter(Filter):
     required_args = ['keyword']
     arg_types = {'keyword': str}
 
-    def __init__(self, attribute, case_insensitive=False):
+    def __init__(self, attribute, case_insensitive=False, **kwargs):
         super(AttributeContainsFilter, self).__init__()
         self.attribute = attribute
         self.insensive = case_insensitive
@@ -156,7 +156,7 @@ class AttributeMinLimitFilter(Filter):
     required_args = ['min_value']
     arg_types = {'min_value': float}
 
-    def __init__(self, attribute):
+    def __init__(self, attribute, **kwargs):
         super(AttributeMinLimitFilter, self).__init__()
         self.attribute = attribute
 
@@ -179,7 +179,7 @@ class AttributeMaxLimitFilter(Filter):
     required_args = ['max_value']
     arg_types = {'max_value': float}
 
-    def __init__(self, attribute):
+    def __init__(self, attribute, **kwargs):
         super(AttributeMaxLimitFilter, self).__init__()
         self.attribute = attribute
 
@@ -202,7 +202,7 @@ class AttributeRangeFilter(Filter, MultipleArgumentFilterMixin):
     required_args = ['min_value', 'max_value']
     arg_types = {'min_value': float, 'max_value': float}
 
-    def __init__(self, attribute, children):
+    def __init__(self, attribute, children, **kwargs):
         super(AttributeRangeFilter, self).__init__()
         self.attribute = attribute
         self.children = children
