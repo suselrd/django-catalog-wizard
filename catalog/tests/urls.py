@@ -1,13 +1,17 @@
 # coding=utf-8
 from django.conf.urls import patterns, url
 from django.views.generic import DetailView
-from catalog.tests.forms import FilterForm
+from catalog.views import CatalogView
+from .views import PropertySalesCatalogView
+from .forms import FilterForm
 from .models import PropertyPublication
-from ..views import CatalogView
 
 
 urlpatterns = patterns(
     "",
+    url(r"sales/(?P<view_type>[A-Za-z]+)/(?P<group_by>[A-Za-z]+)/", PropertySalesCatalogView.as_view(),
+        name="property_sales_catalog"),
+
     url(r"(?P<view_type>[A-Za-z]+)/(?P<group_by>[A-Za-z]+)/", CatalogView.as_view(model=PropertyPublication,
                                                                                   catalog='properties',
                                                                                   form_class=FilterForm),

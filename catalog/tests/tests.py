@@ -22,7 +22,6 @@ class TestCatalog(TestCase):
         Graph().edge_add(self.user, self.article, self.like)
         Graph().edge_add(self.user3, self.article, self.like)
 
-
     def test_basics(self):
         c = Client()
         response = c.get(reverse('property_catalog', kwargs={
@@ -315,3 +314,15 @@ class TestCatalog(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('object', response.context_data)
         self.assertHTMLEqual("tests/grid.html", response.content)
+
+    def test_fixed_filters(self):
+        c = Client()
+
+        response = c.get(reverse('property_sales_catalog', kwargs={
+            'view_type': 'grid',
+            'group_by': 'ungrouped'
+        }))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('object_list', response.context_data)
+        self.assertEqual(len(response.context_data['object_list']), 1)

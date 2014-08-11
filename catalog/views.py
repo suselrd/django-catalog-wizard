@@ -16,6 +16,7 @@ from .exceptions import MissingFilterArgument, WrongTypeArgument
 class CatalogView(ListView, FormMixin):
     catalog = None
     order_field = 'order_by'
+    fixed_filters = {}
 
     def __init__(self, **kwargs):
         super(CatalogView, self).__init__(**kwargs)
@@ -28,6 +29,12 @@ class CatalogView(ListView, FormMixin):
             self.filters = FilterSet()
             self.grouper = None
             self.sorter = None
+
+    def get_fixed_filters(self):
+        """
+        Overwriting methods must return a dict (supports MultiValueDict) specifying values for fixed filters
+        """
+        return self.fixed_filters
 
     def get_form_kwargs(self):
         """
@@ -45,14 +52,14 @@ class CatalogView(ListView, FormMixin):
                 children = filter_obj.children
                 children_values = {}
                 for child, role in children.iteritems():
-                    child_value = self.request.REQUEST.get(child)
+                    child_value = self.complete_request_dict.get(child)
                     if child_value:
                         children_values[role] = child_value
                 if len(children_values) == len(filter_obj.required_args):
                     filter_obj.set_args(**children_values)
                     self.filters.add_filter(filter_obj)
             else:
-                value = self.request.REQUEST.getlist(filter_name)
+                value = self.complete_request_dict.getlist(filter_name)
                 value = [val for val in value if val]
                 if value:
                     value = ",".join(value)
@@ -61,7 +68,7 @@ class CatalogView(ListView, FormMixin):
 
         if self.order_field:
             sorter_name = self.kwargs.setdefault('order_by',  # first from URL kwargs
-                                                 self.request.REQUEST.get(self.order_field, None))  # then from REQUEST
+                                                 self.complete_request_dict.get(self.order_field, None))  # then from REQUEST
             if sorter_name is None or not sorter_name in self.catalog_config['ORDER_BY_OPTIONS']:
                 sorter_name = self.default_order
 
@@ -73,12 +80,16 @@ class CatalogView(ListView, FormMixin):
                 self.sorter = self.catalog_config[sorter_name] = klass(*args, **kwargs)
 
         return {'initial': self.get_initial(),
-                'data': self.request_dict}
+                'data': self.complete_request_dict}
 
     def get(self, request, *args, **kwargs):
         # get REQUEST dict
         self.request_dict = copy(request.GET) if len(request.GET) else copy(request.POST)
         self.request_dict.pop('page', None)
+
+        # create a copy of the request_dict, for add the fixed filters to it
+        self.complete_request_dict = copy(self.request_dict)
+        self.complete_request_dict.update(self.get_fixed_filters())
 
         # instantiate form
         form_class = self.get_form_class()
