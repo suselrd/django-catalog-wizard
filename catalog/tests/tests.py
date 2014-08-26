@@ -326,3 +326,25 @@ class TestCatalog(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('object_list', response.context_data)
         self.assertEqual(len(response.context_data['object_list']), 1)
+
+    def test_search_logging(self):
+        c = Client()
+
+        data = {
+            'budget_min': 7000
+        }
+
+        response = c.get(reverse('property_sales_catalog', kwargs={
+            'view_type': 'grid',
+            'group_by': 'ungrouped'
+        }), data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('object_list', response.context_data)
+        self.assertEqual(len(response.context_data['object_list']), 1)
+
+        from catalog.models import SearchLog
+        self.assertEqual(SearchLog.objects.count(), 1)
+        self.assertEqual(SearchLog.objects.all()[0].model, "tests.propertypublication")
+        self.assertEqual(SearchLog.objects.all()[0].querystring, "budget_min=7000")
+

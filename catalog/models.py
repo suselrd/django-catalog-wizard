@@ -9,3 +9,8 @@ class ModelContextTemplate(models.Model):
 
     class Meta:
         unique_together = ('model', 'context')
+
+
+class SearchLog(models.Model):
+    model = models.CharField(max_length=200)
+    querystring = models.TextField()

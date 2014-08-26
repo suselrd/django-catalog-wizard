@@ -16,6 +16,11 @@ The component integrates nicely with django-social-graph
 
 Changelog
 =========
+0.2.0
+-----
+Added South support.
+Added search logging support.
+
 0.1.11
 -----
 Added the possibility of setting fixed filters, that is, filters that always applies to catalog's queryset,
