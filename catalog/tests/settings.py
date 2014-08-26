@@ -153,6 +153,7 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sites',
+    'south',
     'catalog',
     'catalog.tests',
     # comment the following line if you don't want to work with django-social-graph
