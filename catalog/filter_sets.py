@@ -1,6 +1,8 @@
 # coding=utf-8
 from collections import Iterable
-from .graph_filters import GraphFilter
+from . import CATALOGS_USE_SOCIAL_GRAPH
+if CATALOGS_USE_SOCIAL_GRAPH:
+    from .graph_filters import GraphFilter
 
 
 class FilterSet(Iterable):
@@ -12,7 +14,7 @@ class FilterSet(Iterable):
 
     def add_filter(self, new_filter):
         #  graph filters are applied the last, because of the performance issues
-        if isinstance(new_filter, GraphFilter):
+        if CATALOGS_USE_SOCIAL_GRAPH and isinstance(new_filter, GraphFilter):
             self.filters.append(new_filter)
         else:
             self.filters.insert(0, new_filter)

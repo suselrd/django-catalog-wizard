@@ -16,6 +16,11 @@ The component integrates nicely with django-social-graph
 
 Changelog
 =========
+
+0.2.1
+-----
+Fix for not requiring django-social-graph installation.
+
 0.2.0
 -----
 Added South support.
