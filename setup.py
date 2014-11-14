@@ -5,7 +5,7 @@ setup(
     #url = "http://github.com/suselrd/django-catalog-wizard/",
     author = "Susel Ruiz Duran",
     author_email = "suselrd@gmail.com",
-    version = "0.2.0",
+    version = "0.2.1",
     packages = ["catalog", "catalog.templatetags", "catalog.templates"],
     include_package_data=True,
     zip_safe=False,
