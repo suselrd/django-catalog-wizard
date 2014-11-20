@@ -1,12 +1,12 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name = "django-catalog-wizard",
-    #url = "http://github.com/suselrd/django-catalog-wizard/",
+    url = "http://github.com/suselrd/django-catalog-wizard/",
     author = "Susel Ruiz Duran",
     author_email = "suselrd@gmail.com",
     version = "0.2.1",
-    packages = ["catalog", "catalog.templatetags", "catalog.templates"],
+    packages = find_packages(),
     include_package_data=True,
     zip_safe=False,
     description = "Catalog Wizard for Django",

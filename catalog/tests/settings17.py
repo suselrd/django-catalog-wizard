@@ -24,7 +24,6 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sites',
-    'south',
     'catalog',
     'catalog.tests',
     # comment the following line if you don't want to work with django-social-graph
@@ -159,12 +158,6 @@ CATALOGS = {
     }
 }
 
-
 ROOT_URLCONF = 'catalog.tests.urls'
 
 CATALOGS_USE_SOCIAL_GRAPH = True
-
-#required in django < 1.7 by catalog
-SOUTH_MIGRATION_MODULES = {
-    'catalog': 'catalog.south_migrations',
-}
