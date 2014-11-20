@@ -17,6 +17,11 @@ The component integrates nicely with django-social-graph
 Changelog
 =========
 
+0.3.0
+-----
+Added Django 1.7 support.
+
+
 0.2.1
 -----
 Fix for not requiring django-social-graph installation.

@@ -6,10 +6,8 @@ if CATALOGS_USE_SOCIAL_GRAPH:
     from social_graph import Graph, EdgeTypeAssociation, EdgeType
     from .filters import Filter, MultipleArgumentFilterMixin
 
-
     def inverse(et):
         return EdgeTypeAssociation.objects.get_for_direct_edge_type(et).inverse
-
 
     class GraphFilter(Filter):
 
@@ -30,7 +28,6 @@ if CATALOGS_USE_SOCIAL_GRAPH:
                 self.args['target_pk'] = self.args['target_pk'].split(',')
             except KeyError:
                 pass
-
 
     class RelationExistenceFilter(GraphFilter):
         required_args = ['target_pk']
@@ -55,7 +52,6 @@ if CATALOGS_USE_SOCIAL_GRAPH:
 
         def __unicode__(self):
             return "%s %s" % (self.edge_type, self.target)
-
 
     class ChildRelationExistenceFilter(GraphFilter):
         required_args = ['target_pk']
@@ -83,7 +79,6 @@ if CATALOGS_USE_SOCIAL_GRAPH:
 
         def __unicode__(self):
             return "%s %s" % (self.edge_type, self.target)
-
 
     class RelationAttributeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
         required_args = ['target_pk', 'min_value', 'max_value']
@@ -122,7 +117,6 @@ if CATALOGS_USE_SOCIAL_GRAPH:
                                              self.attribute,
                                              self.args['min_value'])
 
-
     class ChildRelationAttributeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
         required_args = ['target_pk', 'min_value', 'max_value']
         arg_types = {
@@ -160,7 +154,6 @@ if CATALOGS_USE_SOCIAL_GRAPH:
                                              self.attribute,
                                              self.args['min_value'])
 
-
     class RelationTimeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
         required_args = ['target_pk', 'min_value', 'max_value']
         arg_types = {
@@ -196,7 +189,6 @@ if CATALOGS_USE_SOCIAL_GRAPH:
                                              self.args['min_value'],
                                              _('to'),
                                              self.args['min_value'])
-
 
     class ChildRelationTimeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
         required_args = ['target_pk', 'min_value', 'max_value']
