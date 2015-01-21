@@ -70,6 +70,25 @@ class AttributeValueFilter(Filter):
         return "%s: %s" % (self.attribute, self.args['value'])
 
 
+class BoolAttributeValueFilter(AttributeValueFilter):
+    arg_types = {'value': bool}
+
+    def _check_args(self):
+        for arg in self.required_args:
+            try:
+                self.args[arg] = (
+                    True if self.args[arg] in ('True', '1', True, 1)
+                    else False if self.args[arg] in ('False', '0', False, 0)
+                    else None
+                )
+                if self.args[arg] is None:
+                    raise MissingFilterArgument("%s argument is missing" % arg)
+            except KeyError:
+                raise MissingFilterArgument("%s argument is missing" % arg)
+            except ValueError:
+                raise WrongTypeArgument("%s argument can not be cast to %s" % (arg, self.arg_types[arg]))
+
+
 class ForeignKeyValueFilter(Filter):
     required_args = ['value']
     arg_types = {'value': int}
