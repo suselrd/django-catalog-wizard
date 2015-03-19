@@ -11,7 +11,10 @@ class FilterForm(forms.Form):
     name = forms.CharField(max_length=50, required=False)
     name_contains = forms.CharField(max_length=50, required=False)
     keyword = forms.CharField(max_length=50, required=False)
-    liked_by = forms.ModelChoiceField(User.objects, required=False)
+    liked_by = forms.ModelMultipleChoiceField(User.objects, required=False)
+    liked_by_target = forms.ModelChoiceField(User.objects, required=False)
+    liked_by_from = forms.CharField(max_length=255, required=False)
+    liked_by_to = forms.CharField(max_length=255, required=False)
 
     order_by=forms.ChoiceField(choices=[('none', 'Ninguno'),('price_asc', 'Menor Precio'),('price_desc', 'Mayor Precio'),('status_asc', 'Publicos Primero'),
-                                        ('complex_order', 'Menor Precio, Publicos Primero')])
+                                        ('complex_order', 'Menor Precio, Publicos Primero')], required=False)

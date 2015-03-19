@@ -17,6 +17,11 @@ The component integrates nicely with django-social-graph
 Changelog
 =========
 
+0.3.1
+-----
+Added BoolAttributeValueFilter
+Added RequestAwareFilterMixin, for filters that need request information to perform the filtering process.
+
 0.3.0
 -----
 Added Django 1.7 support.

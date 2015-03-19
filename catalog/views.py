@@ -145,7 +145,7 @@ class CatalogView(ListView, FormMixin):
         # apply all filters
         for f in self.filters:
             try:
-                result = f.filter(result)
+                result = f.filter(result, request=self.request)
                 f.applied = True
             except (MissingFilterArgument, WrongTypeArgument):
                 pass

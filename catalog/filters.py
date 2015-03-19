@@ -8,6 +8,7 @@ FILTER_NATURE = ['USER', 'OBJECT']  # TODO: think about this!
 
 
 class Filter(object):
+    request_aware = False
     required_args = []
     arg_types = {}
 
@@ -33,7 +34,7 @@ class Filter(object):
             except ValueError:
                 raise WrongTypeArgument("%s argument can not be cast to %s" % (arg, self.arg_types[arg]))
 
-    def filter(self, objects):
+    def filter(self, objects, request=None):
         self._check_args()
         return [obj for obj in objects if self._check(obj)]
 
@@ -43,6 +44,15 @@ class Filter(object):
 
 class MultipleArgumentFilterMixin(object):
     children = {}
+
+
+class RequestAwareFilterMixin(object):
+    request_aware = True
+
+    def filter(self, objects, request=None):
+        if self.request_aware and not request:
+            raise Exception('Request must be provided to get this filter working.')
+        return super(RequestAwareFilterMixin, self).filter(objects)
 
 
 class AttributeValueFilter(Filter):
@@ -55,7 +65,7 @@ class AttributeValueFilter(Filter):
         if atype != str:
             self.arg_types[self.required_args[0]] = atype
 
-    def filter(self, objects):
+    def filter(self, objects, request=None):
         if isinstance(objects, QuerySet):
             self._check_args()
             return objects.complex_filter({
@@ -97,7 +107,7 @@ class ForeignKeyValueFilter(Filter):
         super(ForeignKeyValueFilter, self).__init__()
         self.key = key
 
-    def filter(self, objects):
+    def filter(self, objects, request=None):
         if isinstance(objects, QuerySet):
             self._check_args()
             return objects.complex_filter({
@@ -121,7 +131,7 @@ class AttributeContainsFilter(Filter):
         self.attribute = attribute
         self.insensive = case_insensitive
 
-    def filter(self, objects):
+    def filter(self, objects, request=None):
         if isinstance(objects, QuerySet):
             self._check_args()
             if self.insensive:
@@ -147,7 +157,7 @@ class AttributeSetContainsFilter(Filter):
         self.attributes = list(attributes)
         self.insensive = kwargs.get('case_insensitive', False)
 
-    def filter(self, objects):
+    def filter(self, objects, request=None):
         if isinstance(objects, QuerySet):
             self._check_args()
             lookup = Q()
@@ -179,7 +189,7 @@ class AttributeMinLimitFilter(Filter):
         super(AttributeMinLimitFilter, self).__init__()
         self.attribute = attribute
 
-    def filter(self, objects):
+    def filter(self, objects, request=None):
         if isinstance(objects, QuerySet):
             self._check_args()
             return objects.complex_filter({
@@ -202,7 +212,7 @@ class AttributeMaxLimitFilter(Filter):
         super(AttributeMaxLimitFilter, self).__init__()
         self.attribute = attribute
 
-    def filter(self, objects):
+    def filter(self, objects, request=None):
         if isinstance(objects, QuerySet):
             self._check_args()
             return objects.complex_filter({
@@ -226,7 +236,7 @@ class AttributeRangeFilter(Filter, MultipleArgumentFilterMixin):
         self.attribute = attribute
         self.children = children
 
-    def filter(self, objects):
+    def filter(self, objects, request=None):
         if isinstance(objects, QuerySet):
             self._check_args()
             return objects.complex_filter({
