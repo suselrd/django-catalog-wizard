@@ -36,9 +36,9 @@ class Filter(object):
 
     def filter(self, objects, request=None):
         self._check_args()
-        return [obj for obj in objects if self._check(obj)]
+        return [obj for obj in objects if self._check(obj, request)]
 
-    def _check(self, obj):
+    def _check(self, obj, request=None):
         return True
 
 
@@ -73,7 +73,7 @@ class AttributeValueFilter(Filter):
             })
         return super(AttributeValueFilter, self).filter(objects)
 
-    def _check(self, obj):
+    def _check(self, obj, request=None):
         return getattr(obj, self.attribute) == self.args['value']
 
     def __unicode__(self):
@@ -115,7 +115,7 @@ class ForeignKeyValueFilter(Filter):
             })
         return super(ForeignKeyValueFilter, self).filter(objects)
 
-    def _check(self, obj):
+    def _check(self, obj, request=None):
         return getattr(obj, self.key) == self.args['value']
 
     def __unicode__(self):
@@ -141,7 +141,7 @@ class AttributeContainsFilter(Filter):
             return objects.filter(Q(**lookup_dict))
         return super(AttributeContainsFilter, self).filter(objects)
 
-    def _check(self, obj):
+    def _check(self, obj, request=None):
         return str(getattr(obj, self.attribute)).lower().find(self.args['keyword'].lower()) >= 0
 
     def __unicode__(self):
@@ -171,7 +171,7 @@ class AttributeSetContainsFilter(Filter):
 
         return super(AttributeSetContainsFilter, self).filter(objects)
 
-    def _check(self, obj):
+    def _check(self, obj, request=None):
         for attribute in self.attributes:
             if str(getattr(obj, attribute)).lower().find(self.args['keyword'].lower()) >= 0:
                 return True
@@ -197,7 +197,7 @@ class AttributeMinLimitFilter(Filter):
             })
         return super(AttributeMinLimitFilter, self).filter(objects)
 
-    def _check(self, obj):
+    def _check(self, obj, request=None):
         return self.args['min_value'] <= getattr(obj, self.attribute)
 
     def __unicode__(self):
@@ -220,7 +220,7 @@ class AttributeMaxLimitFilter(Filter):
             })
         return super(AttributeMaxLimitFilter, self).filter(objects)
 
-    def _check(self, obj):
+    def _check(self, obj, request=None):
         return getattr(obj, self.attribute) <= self.args['max_value']
 
     def __unicode__(self):
@@ -244,7 +244,7 @@ class AttributeRangeFilter(Filter, MultipleArgumentFilterMixin):
             })
         return super(AttributeRangeFilter, self).filter(objects)
 
-    def _check(self, obj):
+    def _check(self, obj, request=None):
         return self.args['min_value'] <= getattr(obj, self.attribute) <= self.args['max_value']
 
     def __unicode__(self):
