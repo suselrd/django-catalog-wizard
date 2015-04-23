@@ -17,6 +17,10 @@ The component integrates nicely with django-social-graph
 Changelog
 =========
 
+0.3.3
+-----
+Spanish Translations.
+
 0.3.2
 -----
 Fix in request aware filters.
