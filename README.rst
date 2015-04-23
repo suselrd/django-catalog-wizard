@@ -17,7 +17,7 @@ The component integrates nicely with django-social-graph
 Changelog
 =========
 
-0.3.3
+0.3.4
 -----
 Spanish Translations.
 
