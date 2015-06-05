@@ -20,8 +20,8 @@ def object_template(obj, tpl_context):
     if not isinstance(obj, Model):
         raise Exception(_("The object must be a model instance"))
 
-    if hasattr(obj.__class__, 'get_object_template'):
-        obj_template = obj.__class__.get_object_template(tpl_context)
-    else:
-        obj_template = "catalog/no_template.html"
-    return force_text(obj_template)
+    return force_text(
+        obj.__class__.get_object_template(tpl_context)
+        if hasattr(obj.__class__, 'get_object_template')
+        else "catalog/no_template.html"
+    )

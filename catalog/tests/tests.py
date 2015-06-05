@@ -6,7 +6,7 @@ from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from social_graph import EdgeType, Graph
-from .models import PropertyPublication
+from models import PropertyPublication
 
 
 class TestCatalog(TestCase):
@@ -202,6 +202,44 @@ class TestCatalog(TestCase):
         self.assertEqual(response.context_data['is_grouped'], True)
         self.assertEqual(response.context_data['object_list'][0]['is_sorted'], True)
 
+    def test_date_grouping(self):
+        c = Client()
+        data = {
+            'order_by': 'complex_order'
+        }
+
+        response = c.get(reverse('property_catalog', kwargs={
+            'view_type': 'grid',
+            'group_by': 'created'
+        }), data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('object_list', response.context_data)
+        self.assertEqual(len(response.context_data['object_list']), 1)
+        self.assertEqual(len(response.context_data['object_list'][0]['object_list']), 2)
+        self.assertEqual(response.context_data['object_list'][0]['object_list'][0].price, 500)
+        self.assertEqual(response.context_data['is_grouped'], True)
+        self.assertEqual(response.context_data['object_list'][0]['is_sorted'], True)
+
+    def test_datetime_grouping(self):
+        c = Client()
+        data = {
+            'order_by': 'complex_order'
+        }
+
+        response = c.get(reverse('property_catalog', kwargs={
+            'view_type': 'grid',
+            'group_by': 'modified'
+        }), data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('object_list', response.context_data)
+        self.assertEqual(len(response.context_data['object_list']), 1)
+        self.assertEqual(len(response.context_data['object_list'][0]['object_list']), 2)
+        self.assertEqual(response.context_data['object_list'][0]['object_list'][0].price, 500)
+        self.assertEqual(response.context_data['is_grouped'], True)
+        self.assertEqual(response.context_data['object_list'][0]['is_sorted'], True)
+
     def test_relation_existence_filter(self):
         c = Client()
         data = {
@@ -347,4 +385,25 @@ class TestCatalog(TestCase):
         self.assertEqual(SearchLog.objects.count(), 1)
         self.assertEqual(SearchLog.objects.all()[0].model, "tests.propertypublication")
         self.assertEqual(SearchLog.objects.all()[0].querystring, "budget_min=7000")
+
+
+class TestModelTemplatesDecorator(TestCase):
+    fixtures = ['test_data_without_context_templates.json']
+
+    def setUp(self):
+        from models import Test
+        self.user = User.objects.get(pk=1)
+        self.user2 = User.objects.get(pk=2)
+        self.user3 = User.objects.get(pk=3)
+        self.article = Test.objects.create()
+
+    def test_template_tag(self):
+        c = Client()
+        response = c.get(reverse('test_detail', kwargs={
+            'pk': 1,
+        }))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('object', response.context_data)
+        self.assertHTMLEqual("tests/grid.html", response.content)
+
 

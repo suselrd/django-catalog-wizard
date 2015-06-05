@@ -59,4 +59,6 @@ class ClassifierGrouping(GraphGrouping):
 
     def memberships(self, obj):
         count = self.graph.edge_count(obj,  self.described_by)
-        return set([node for node, attributes, time in self.graph.edge_range(obj,  self.described_by, 0, count)]) & self.groups
+        return set([
+            node for node, attributes, time in self.graph.edge_range(obj,  self.described_by, 0, count)
+        ]) & self.groups

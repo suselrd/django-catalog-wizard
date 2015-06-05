@@ -134,6 +134,46 @@ CATALOGS = {
                         }
                     }
                 }
+            },
+            'created': {
+                'type': 'catalog.groupings.DateAttributeValueGrouping',
+                'args': ['created'],
+                'kwargs': {
+                    'aggregate': {
+                        'count': {
+                            'type': 'Count',
+                            'attribute': 'id'
+                        },
+                        'total': {
+                            'type': 'Sum',
+                            'attribute': 'price'
+                        },
+                        'average': {
+                            'type': 'Avg',
+                            'attribute': 'price'
+                        }
+                    }
+                }
+            },
+            'modified': {
+                'type': 'catalog.groupings.DateTimeAttributeValueGrouping',
+                'args': ['modified'],
+                'kwargs': {
+                    'aggregate': {
+                        'count': {
+                            'type': 'Count',
+                            'attribute': 'id'
+                        },
+                        'total': {
+                            'type': 'Sum',
+                            'attribute': 'price'
+                        },
+                        'average': {
+                            'type': 'Avg',
+                            'attribute': 'price'
+                        }
+                    }
+                }
             }
         },
         'DEFAULT_ORDER_BY': 'none',

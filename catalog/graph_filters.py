@@ -43,11 +43,14 @@ if CATALOGS_USE_SOCIAL_GRAPH:
                 target = self.target_model.objects.get(pk=target_pk)
                 self.target.append(target)
                 count = self.graph.edge_count(target, self.inverse_edge_type)
-                subset &= set([node for node, attributes, time in
-                              self.graph.edge_range(target,
-                              self.inverse_edge_type,
-                              0,
-                              count)])
+                subset &= set([
+                    node for node, attributes, time in self.graph.edge_range(
+                        target,
+                        self.inverse_edge_type,
+                        0,
+                        count
+                    )
+                ])
             return list(subset)
 
         def __unicode__(self):
@@ -71,10 +74,14 @@ if CATALOGS_USE_SOCIAL_GRAPH:
                 target = self.target_model.objects.get(pk=target_pk)
                 self.target.append(target)
                 count = self.graph.edge_count(target, self.inverse_edge_type)
-                subset &= set([node for node, attributes, time in self.graph.edge_range(target,
-                                                                                        self.inverse_edge_type,
-                                                                                        0,
-                                                                                        count)])
+                subset &= set([
+                    node for node, attributes, time in self.graph.edge_range(
+                        target,
+                        self.inverse_edge_type,
+                        0,
+                        count
+                    )
+                ])
             return [obj for obj in objects if getattr(obj, self.attribute) in subset]
 
         def __unicode__(self):
@@ -101,21 +108,25 @@ if CATALOGS_USE_SOCIAL_GRAPH:
                 target = self.target_model.objects.get(pk=target_pk)
                 self.target.append(target)
                 count = self.graph.edge_count(target, self.inverse_edge_type)
-                subset &= set([node for node, attributes, time in
-                              self.graph.edge_range(target,
-                                                    self.inverse_edge_type,
-                                                    0,
-                                                    count)
-                              if self.args['min_value'] <= attributes[self.attribute] <= self.args['max_value']])
+                subset &= set([
+                    node for node, attributes, time in self.graph.edge_range(
+                        target,
+                        self.inverse_edge_type,
+                        0,
+                        count
+                    ) if self.args['min_value'] <= attributes[self.attribute] <= self.args['max_value']
+                ])
 
             return list(subset)
 
         def __unicode__(self):
-            return "%s %s (%s < %s < %s)" % (self.edge_type,
-                                             self.target,
-                                             self.args['min_value'],
-                                             self.attribute,
-                                             self.args['min_value'])
+            return "%s %s (%s < %s < %s)" % (
+                self.edge_type,
+                self.target,
+                self.args['min_value'],
+                self.attribute,
+                self.args['min_value']
+            )
 
     class ChildRelationAttributeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
         required_args = ['target_pk', 'min_value', 'max_value']
@@ -139,20 +150,24 @@ if CATALOGS_USE_SOCIAL_GRAPH:
                 target = self.target_model.objects.get(pk=target_pk)
                 self.target.append(target)
                 count = self.graph.edge_count(target, self.inverse_edge_type)
-                subset &= set([node for node, attributes, time in
-                              self.graph.edge_range(target,
-                                                    self.inverse_edge_type,
-                                                    0,
-                                                    count)
-                              if self.args['min_value'] <= attributes[self.attribute] <= self.args['max_value']])
+                subset &= set([
+                    node for node, attributes, time in self.graph.edge_range(
+                        target,
+                        self.inverse_edge_type,
+                        0,
+                        count
+                    ) if self.args['min_value'] <= attributes[self.attribute] <= self.args['max_value']
+                ])
             return [obj for obj in objects if getattr(obj, self.object_attribute) in subset]
 
         def __unicode__(self):
-            return "%s %s (%s < %s < %s)" % (self.edge_type,
-                                             self.target,
-                                             self.args['min_value'],
-                                             self.attribute,
-                                             self.args['min_value'])
+            return "%s %s (%s < %s < %s)" % (
+                self.edge_type,
+                self.target,
+                self.args['min_value'],
+                self.attribute,
+                self.args['min_value']
+            )
 
     class RelationTimeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
         required_args = ['target_pk', 'min_value', 'max_value']
@@ -174,21 +189,26 @@ if CATALOGS_USE_SOCIAL_GRAPH:
                 target = self.target_model.objects.get(pk=target_pk)
                 self.target.append(target)
                 count = self.graph.edge_count(target, self.inverse_edge_type)
-                subset &= set([node for node, attributes, time in
-                               self.graph.edge_time_range(target,
-                                                          self.inverse_edge_type,
-                                                          self.args['max_value'],
-                                                          self.args['min_value'],
-                                                          count)])
+                subset &= set([
+                    node for node, attributes, time in self.graph.edge_time_range(
+                        target,
+                        self.inverse_edge_type,
+                        self.args['max_value'],
+                        self.args['min_value'],
+                        count
+                    )
+                ])
             return list(subset)
 
         def __unicode__(self):
-            return "%s %s (%s %s %s %s)" % (self.edge_type,
-                                             self.target,
-                                             _('from'),
-                                             self.args['min_value'],
-                                             _('to'),
-                                             self.args['min_value'])
+            return "%s %s (%s %s %s %s)" % (
+                self.edge_type,
+                self.target,
+                _('from'),
+                self.args['min_value'],
+                _('to'),
+                self.args['min_value']
+            )
 
     class ChildRelationTimeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
         required_args = ['target_pk', 'min_value', 'max_value']
@@ -211,18 +231,23 @@ if CATALOGS_USE_SOCIAL_GRAPH:
                 target = self.target_model.objects.get(pk=target_pk)
                 self.target.append(target)
                 count = self.graph.edge_count(target, self.inverse_edge_type)
-                subset &= set([node for node, attributes, time in
-                              self.graph.edge_time_range(target,
-                                                         self.inverse_edge_type,
-                                                         self.args['max_value'],
-                                                         self.args['min_value'],
-                                                         count)])
+                subset &= set([
+                    node for node, attributes, time in self.graph.edge_time_range(
+                        target,
+                        self.inverse_edge_type,
+                        self.args['max_value'],
+                        self.args['min_value'],
+                        count
+                    )
+                ])
             return [obj for obj in objects if getattr(obj, self.attribute) in subset]
 
         def __unicode__(self):
-            return "%s %s (%s %s %s %s)" % (self.edge_type,
-                                             self.target,
-                                             _('from'),
-                                             self.args['min_value'],
-                                             _('to'),
-                                             self.args['min_value'])
+            return "%s %s (%s %s %s %s)" % (
+                self.edge_type,
+                self.target,
+                _('from'),
+                self.args['min_value'],
+                _('to'),
+                self.args['min_value']
+            )

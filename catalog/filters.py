@@ -1,10 +1,8 @@
 # coding=utf-8
+import datetime
 from django.db.models.query import QuerySet
 from django.db.models import Q
-from .exceptions import MissingFilterArgument, WrongTypeArgument
-
-
-FILTER_NATURE = ['USER', 'OBJECT']  # TODO: think about this!
+from exceptions import MissingFilterArgument, WrongTypeArgument
 
 
 class Filter(object):
@@ -249,3 +247,56 @@ class AttributeRangeFilter(Filter, MultipleArgumentFilterMixin):
 
     def __unicode__(self):
         return "%s > %s > %s" % (self.args['max_value'], self.attribute, self.args['min_value'])
+
+
+class DateMixin(object):
+    options = {
+        'today': {
+            'input': (1, '1'),
+            'days_back': None
+        },
+        'yesterday': {
+            'input': (2, '2'),
+            'days_back': 1
+        },
+        'last_week': {
+            'input': (3, '3'),
+            'days_back': 7
+        },
+        'last_month': {
+            'input': (4, '4'),
+            'days_back': 30
+        }
+    }
+
+    def calculate_arg(self, arg):
+        for option in self.options.values():
+            if arg in option['input']:
+                return (datetime.date.today() - datetime.timedelta(days=option['days_back'])
+                        if option['days_back'] else datetime.date.today())
+        return None
+
+    def _check_args(self):
+        for arg in self.required_args:
+            try:
+                self.args[arg] = self.calculate_arg(self.args[arg])
+                if self.args[arg] is None:
+                    raise MissingFilterArgument("%s argument is missing" % arg)
+
+            except KeyError:
+                raise MissingFilterArgument("%s argument is missing" % arg)
+            except ValueError:
+                raise WrongTypeArgument("%s argument can not be cast to %s" % (arg, self.arg_types[arg]))
+
+
+class DateAttributeMinLimitFilter(DateMixin, AttributeMinLimitFilter):
+    arg_types = {'min_value': datetime.date}
+
+
+class DateAttributeMaxLimitFilter(DateMixin, AttributeMaxLimitFilter):
+    arg_types = {'max_value': datetime.date}
+
+
+class DateAttributeRangeFilter(DateMixin, AttributeRangeFilter):
+    arg_types = {'min_value': datetime.date, 'max_value': datetime.date}
+

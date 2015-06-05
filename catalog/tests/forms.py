@@ -1,7 +1,7 @@
 # coding=utf-8
 from django import forms
 from django.contrib.auth.models import User
-from .models import OperationType
+from models import OperationType
 
 
 class FilterForm(forms.Form):
@@ -16,5 +16,13 @@ class FilterForm(forms.Form):
     liked_by_from = forms.CharField(max_length=255, required=False)
     liked_by_to = forms.CharField(max_length=255, required=False)
 
-    order_by=forms.ChoiceField(choices=[('none', 'Ninguno'),('price_asc', 'Menor Precio'),('price_desc', 'Mayor Precio'),('status_asc', 'Publicos Primero'),
-                                        ('complex_order', 'Menor Precio, Publicos Primero')], required=False)
+    order_by=forms.ChoiceField(
+        choices=[
+            ('none', 'Ninguno'),
+            ('price_asc', 'Menor Precio'),
+            ('price_desc', 'Mayor Precio'),
+            ('status_asc', 'Publicos Primero'),
+            ('complex_order', 'Menor Precio, Publicos Primero')
+        ],
+        required=False
+    )

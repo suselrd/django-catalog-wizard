@@ -1,8 +1,8 @@
 # coding=utf-8
 from abc import abstractmethod
-from django.core.exceptions import ImproperlyConfigured
 from django.db.models.query import QuerySet
 from django.db.models.aggregates import Sum, Avg, Count, Max, Min
+from django.utils import dateformat
 
 AGGREGATION_TYPES = {
     'Count': Count,
@@ -14,10 +14,34 @@ AGGREGATION_TYPES = {
 
 
 class Grouping(object):
+    group_by = None
+    attribute_aliases = []
+    additional_data = None
 
     def __init__(self, attribute, aggregate=None):
         self.attribute = attribute
         self.aggregate = aggregate if aggregate else {}
+
+    def get_group_name(self, group):
+        """
+        Overwriting methods must return a string
+        """
+        return '%s' % group[self.attribute]
+
+    def get_group_by_name(self):
+        """
+        Overwriting methods must return a string
+        """
+        return self.group_by or self.attribute
+
+    def get_additional_data(self, group):
+        """
+        Overwriting methods must return a string
+        """
+        return self.additional_data or {}
+
+    def get_attribute(self, obj):
+        return getattr(obj, self.attribute)
 
     @abstractmethod
     def group(self, objects):
@@ -27,9 +51,9 @@ class Grouping(object):
         result = dict()
         if self.aggregate:
             aggregates = dict()
-            aggregation_functions = dict([(value['type'], key) for key, value in self.aggregate.iteritems()])
+            aggregation_functions = dict([(value['type'], key) for key, value in self.aggregate.items()])
         for obj in objects:
-            attr = getattr(obj, self.attribute)
+            attr = self.get_attribute(obj)
             if not str(attr) in result:
                 result[str(attr)] = {
                     self.attribute: attr,
@@ -61,31 +85,136 @@ class Grouping(object):
                     if current_min is None or field_value < current_min:
                         aggregates[str(attr)]['Max'] = field_value
 
-        for group_key, group in result.iteritems():
-            for key, value in self.aggregate.iteritems():
+        for group_key, group in result.items():
+            result[group_key].update({
+                'name': self.get_group_name(group),
+                'group_by': self.get_group_by_name()
+            })
+            for alias in self.attribute_aliases:
+                result[group_key].update({
+                    alias: group[self.attribute]
+                })
+            for additional_key, additional_value in self.get_additional_data(group).items():
+                result[group_key].update({
+                    additional_key: additional_value
+                })
+            for key, value in self.aggregate.items():
                 if value['type'] == 'Avg':
                     key_value = aggregates[group_key]['Sum']/aggregates[group_key]['Count']
                 else:
                     key_value = aggregates[group_key][value['type']]
                 result[group_key].update({key: key_value})
 
-        return [value for value in result.values()]
+        return result.values()
 
 
 class AttributeValueGrouping(Grouping):
 
+    def get_groups(self, objects):
+        result = objects.select_related().values(self.attribute)
+        if self.aggregate:
+            result = result.annotate(
+                **dict([(
+                    key, AGGREGATION_TYPES[value['type']](value['attribute']))
+                    for key, value in self.aggregate.items()
+                ])
+            )
+        return result
+
+    def get_lookup_dict(self, group):
+        return {
+            self.attribute: group[self.attribute]
+        }
+
     def group(self, objects):
         if isinstance(objects, QuerySet):
-            result = objects.select_related().values(self.attribute)
-            if self.aggregate:
-                aggregate_dict = dict([(key, AGGREGATION_TYPES[value['type']](value['attribute']))
-                                       for key, value in self.aggregate.iteritems()])
-                result = result.annotate(**aggregate_dict)
-
+            result = self.get_groups(objects)
             for group in result:
-                lookup_dict = {
-                    self.attribute: group[self.attribute]
-                }
-                group['object_list'] = objects.filter(**lookup_dict)
+                group['object_list'] = objects.filter(**self.get_lookup_dict(group))
+                group['name'] = self.get_group_name(group)
+                group['group_by'] = self.get_group_by_name()
+                for alias in self.attribute_aliases:
+                    group.update({
+                        alias: group[self.attribute]
+                    })
+                for additional_key, additional_value in self.get_additional_data(group).items():
+                    group.update({
+                        additional_key: additional_value
+                    })
             return result
         return self._base_group(objects)
+
+
+class DateTimeMixin(object):
+
+    def get_groups(self, objects):
+        return [
+            {self.attribute: value} for value in objects.select_related().datetimes(self.attribute, self.group_by)
+        ]
+
+
+class DateAttributeValueGrouping(AttributeValueGrouping):
+    group_by = 'day'
+    output_format = 'j F Y'
+    attribute_aliases = ['date']
+
+    def get_lookup_dict(self, group):
+        return {
+            '%s__day' % self.attribute: group[self.attribute].day,
+            '%s__month' % self.attribute: group[self.attribute].month,
+            '%s__year' % self.attribute: group[self.attribute].year
+        }
+
+    def get_additional_data(self, group):
+        result = super(DateAttributeValueGrouping, self).get_additional_data(group)
+        if self.aggregate:
+            result.update(
+                group['object_list'].aggregate(
+                    **dict([
+                        (key, AGGREGATION_TYPES[value['type']](value['attribute']))
+                        for key, value in self.aggregate.items()
+                    ])
+                )
+            )
+        return result
+
+    def get_groups(self, objects):
+        return [
+            {self.attribute: value} for value in objects.select_related().dates(self.attribute, self.group_by)
+        ]
+
+    def get_group_name(self, group):
+        return '%s' % (dateformat.DateFormat(group[self.attribute]).format(self.output_format))
+
+
+class DateTimeAttributeValueGrouping(DateTimeMixin, DateAttributeValueGrouping):
+    pass
+
+
+class DateAttributeMonthValueGrouping(DateAttributeValueGrouping):
+    group_by = 'month'
+    output_format = 'F Y'
+
+    def get_lookup_dict(self, group):
+        return {
+            '%s__month' % self.attribute: group[self.attribute].month,
+            '%s__year' % self.attribute: group[self.attribute].year
+        }
+
+
+class DateTimeAttributeMonthValueGrouping(DateTimeMixin, DateAttributeMonthValueGrouping):
+    pass
+
+
+class DateAttributeYearValueGrouping(DateAttributeValueGrouping):
+    group_by = 'year'
+    output_format = 'Y'
+
+    def get_lookup_dict(self, group):
+        return {
+            '%s__year' % self.attribute: group[self.attribute].year
+        }
+
+
+class DateTimeAttributeYearValueGrouping(DateTimeMixin, DateAttributeYearValueGrouping):
+    pass

@@ -58,9 +58,7 @@
             "operation_type" : 1,
             "details": "bla bla bla",
             "price": 10000,
-            "status": "PUBLIC",
-            "created": "2000-12-12",
-            "modified": "2000-12-12 10:10:00"
+            "status": "PUBLIC"
         }
     },
     {
@@ -71,9 +69,7 @@
             "operation_type" : 2,
             "details": "otro otro otro",
             "price": 500,
-            "status": "PRIVATE",
-            "created": "2000-12-12",
-            "modified": "2000-12-12 10:10:00"
+            "status": "PRIVATE"
         }
     },
     {
@@ -98,15 +94,6 @@
         "fields": {
             "direct": 1,
             "inverse": 2
-        }
-    },
-    {
-        "pk": 1,
-        "model": "catalog.modelcontexttemplate",
-        "fields": {
-            "model": "tests.propertypublication",
-            "context": "grid",
-            "template": "tests/grid.html"
         }
     }
 ]

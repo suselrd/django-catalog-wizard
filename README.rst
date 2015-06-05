@@ -17,6 +17,14 @@ The component integrates nicely with django-social-graph
 Changelog
 =========
 
+1.0.0
+-----
+- New decorator for catalog enabled models, allowing to pass a dictionary mapping contexts to templates for that specific model.
+- New filters for date attributes.
+- New groupings for date attributes.
+- Catalog views now returns the total result count (even if the results are paginated).
+- Performance improvements.
+
 0.4.0
 -----
 Spanish Translations.

@@ -1,16 +1,17 @@
 # coding=utf-8
 from copy import copy
+from django.db.models.query import QuerySet
 from django.http import Http404
 from django.utils.translation import ugettext as _
 from django.utils.module_loading import import_by_path
 from django.views.generic.edit import FormMixin
 from django.views.generic.list import ListView
 from . import CATALOGS
-from .filters import Filter, MultipleArgumentFilterMixin
-from .filter_sets import FilterSet
-from .groupings import Grouping
-from .sorters import Sorter
-from .exceptions import MissingFilterArgument, WrongTypeArgument
+from filters import Filter, MultipleArgumentFilterMixin
+from filter_sets import FilterSet
+from groupings import Grouping
+from sorters import Sorter
+from exceptions import MissingFilterArgument, WrongTypeArgument
 
 
 class CatalogView(ListView, FormMixin):
@@ -43,10 +44,10 @@ class CatalogView(ListView, FormMixin):
         for filter_name in self.filter_tray:
             filter_obj = self.filter_tray[filter_name]
             if not isinstance(filter_obj, Filter):
-                klass = import_by_path(filter_obj['type'])
-                args = filter_obj.setdefault('args', [])
-                kwargs = filter_obj.setdefault('kwargs', {})
-                filter_obj = self.filter_tray[filter_name] = self.catalog_config['FILTER_TRAY'][filter_name] = klass(*args, **kwargs)
+                filter_obj = import_by_path(filter_obj['type'])(
+                    *filter_obj.setdefault('args', []), **filter_obj.setdefault('kwargs', {})
+                )
+                self.filter_tray[filter_name] = self.catalog_config['FILTER_TRAY'][filter_name] = filter_obj
 
             if isinstance(filter_obj, MultipleArgumentFilterMixin):
                 children = filter_obj.children
@@ -67,20 +68,23 @@ class CatalogView(ListView, FormMixin):
                     self.filters.add_filter(filter_obj)
 
         if self.order_field:
-            sorter_name = self.kwargs.setdefault('order_by',  # first from URL kwargs
-                                                 self.complete_request_dict.get(self.order_field, None))  # then from REQUEST
+            sorter_name = self.kwargs.setdefault(
+                'order_by',  # first from URL kwargs
+                self.complete_request_dict.get(self.order_field, None)  # then from REQUEST
+            )
             if sorter_name is None or not sorter_name in self.catalog_config['ORDER_BY_OPTIONS']:
                 sorter_name = self.default_order
 
             self.sorter = self.catalog_config['ORDER_BY_OPTIONS'][sorter_name]
             if self.sorter and not isinstance(self.sorter, Sorter):
-                klass = import_by_path(self.sorter['type'])
-                args = self.sorter.setdefault('args', [])
-                kwargs = self.sorter.setdefault('kwargs', {})
-                self.sorter = self.catalog_config[sorter_name] = klass(*args, **kwargs)
+                self.sorter = self.catalog_config[sorter_name] = import_by_path(self.sorter['type'])(
+                    *self.sorter.setdefault('args', []), **self.sorter.setdefault('kwargs', {})
+                )
 
-        return {'initial': self.get_initial(),
-                'data': self.complete_request_dict}
+        return {
+            'initial': self.get_initial(),
+            'data': self.complete_request_dict
+        }
 
     def get(self, request, *args, **kwargs):
         # get REQUEST dict
@@ -112,26 +116,27 @@ class CatalogView(ListView, FormMixin):
             grouper_name = self.default_grouper
         self.grouper = self.catalog_config['GROUP_BY_OPTIONS'][grouper_name]
         if self.grouper and not isinstance(self.grouper, Grouping):
-            klass = import_by_path(self.grouper['type'])
-            args = self.grouper.setdefault('args', [])
-            kwargs = self.grouper.setdefault('kwargs', {})
-            self.grouper = self.catalog_config[grouper_name] = klass(*args, **kwargs)
+            self.grouper = self.catalog_config[grouper_name] = import_by_path(self.grouper['type'])(
+                *self.grouper.setdefault('args', []), **self.grouper.setdefault('kwargs', {})
+            )
 
         self.object_list = self.get_queryset()
-        allow_empty = self.get_allow_empty()
 
-        if not allow_empty:
+        if not self.get_allow_empty():
             # When pagination is enabled and object_list is a queryset,
             # it's better to do a cheap query than to load the unpaginated
             # queryset in memory.
-            if (self.get_paginate_by(self.object_list) is not None
-                and hasattr(self.object_list, 'exists')):
+            if self.get_paginate_by(self.object_list) is not None and hasattr(self.object_list, 'exists'):
                 is_empty = not self.object_list.exists()
             else:
                 is_empty = len(self.object_list) == 0
             if is_empty:
-                raise Http404(_("Empty list and '%(class_name)s.allow_empty' is False.")
-                        % {'class_name': self.__class__.__name__})
+                raise Http404(
+                    _("Empty list and '%(class_name)s.allow_empty' is False.") % {
+                        'class_name': self.__class__.__name__
+                    }
+                )
+
         context = self.get_context_data(form=self.form)
         return self.render_to_response(context)
 
@@ -139,7 +144,7 @@ class CatalogView(ListView, FormMixin):
         return self.get(request, *args, **kwargs)
 
     def get_queryset(self):
-        result = super(CatalogView, self).get_queryset()
+        result = super(CatalogView, self).get_queryset().order_by()  # remove previous ordering
         if self.model is None:
             self.model = result.model
         # apply all filters
@@ -156,41 +161,35 @@ class CatalogView(ListView, FormMixin):
         if self.grouper:
             queryset = kwargs.pop('object_list', self.object_list)
             page_size = self.get_paginate_by(queryset)
+            max_page = None
             context_object_name = self.get_context_object_name(queryset)
             groups = self.grouper.group(queryset)
+            if self.sorter or page_size:  # order and/or pagination stuff
+                for group in groups:
+                    if self.sorter:
+                        queryset = self.sorter.sort(group['object_list'])
+                        group.update({
+                            'order': self.sorter,
+                            'is_sorted': True,
+                            'object_list': queryset
+                        })
+                    if page_size:
+                        paginator, page, queryset, is_paginated = self.paginate_queryset(group['object_list'], page_size)
+                        group.update({
+                            'paginator': paginator,
+                            'page_obj': page,
+                            'is_paginated': is_paginated,
+                            'object_list': queryset
+                        })
+                        if max_page is None or page.paginator.num_pages > max_page.paginator.num_pages:
+                            max_page = page
+
             context = {
                 'grouper': self.grouper,
-                'is_grouped': True
+                'is_grouped': True,
+                'object_list': groups,
+                'max_page': max_page
             }
-            # order
-            if self.sorter:
-                for group in groups:
-                    queryset = self.sorter.sort(group['object_list'])
-                    group.update({
-                        'order': self.sorter,
-                        'is_sorted': True,
-                        'object_list': queryset
-                    })
-            # paginate
-            if page_size:
-                max_page = None
-                for group in groups:
-                    paginator, page, queryset, is_paginated = self.paginate_queryset(group['object_list'], page_size)
-                    group.update({
-                        'paginator': paginator,
-                        'page_obj': page,
-                        'is_paginated': is_paginated,
-                        'object_list': queryset
-                    })
-                    if max_page is None or page.paginator.num_pages > max_page.paginator.num_pages:
-                        max_page = page
-                context.update({
-                    'max_page': max_page
-                })
-
-            context.update({
-                'object_list': groups
-            })
             if context_object_name is not None:
                 context[context_object_name] = groups
             context.update(kwargs)
@@ -208,25 +207,14 @@ class CatalogView(ListView, FormMixin):
 
         context.update({
             'applied_filters': [f for f in self.filters if f.applied],
+            'result_count': self.object_list.count() if isinstance(self.object_list, QuerySet) else len(self.object_list),
             'request_dict': self.request_dict,
-            'query_string': self.request_dict.urlencode()
+            'query_string': self.request_dict.urlencode(),
+            'object_template': self.model.get_object_template(self.view_type)
+            if hasattr(self.model, 'get_object_template') else "catalog/no_template.html"
         })
         self.filters = FilterSet()  # reset filters
         return context
 
     def get_template_names(self):
         return self.catalog_config['VIEW_TYPES'][self.view_type]
-
-    def render_to_response(self, context, **response_kwargs):
-        if hasattr(self.model, 'get_object_template'):
-            object_template = self.model.get_object_template(self.view_type)
-        else:
-            object_template = "catalog/no_template.html"
-
-        object_specific_templates = {
-            'object_template': object_template
-        }
-        context.update(object_specific_templates)
-        return super(CatalogView, self).render_to_response(context, **response_kwargs)
-
-
