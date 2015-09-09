@@ -17,6 +17,10 @@ The component integrates nicely with django-social-graph
 Changelog
 =========
 
+1.1.0
+-----
+- Support for friendly display of applied filters.
+
 1.0.0
 -----
 - New decorator for catalog enabled models, allowing to pass a dictionary mapping contexts to templates for that specific model.

@@ -12,7 +12,7 @@ if CATALOGS_USE_SOCIAL_GRAPH:
     class GraphFilter(Filter):
 
         def __init__(self, edge_type, target_model, **kwargs):
-            super(GraphFilter, self).__init__()
+            super(GraphFilter, self).__init__(**kwargs)
             self.graph = Graph()
             self.edge_type = EdgeType.objects.get(name=edge_type)
             self.inverse_edge_type = inverse(self.edge_type)
@@ -63,7 +63,7 @@ if CATALOGS_USE_SOCIAL_GRAPH:
         }
 
         def __init__(self, attribute, edge_type, target_model, **kwargs):
-            super(ChildRelationExistenceFilter, self).__init__(edge_type, target_model)
+            super(ChildRelationExistenceFilter, self).__init__(edge_type, target_model, **kwargs)
             self.attribute = attribute
 
         def filter(self, objects, **kwargs):
@@ -87,7 +87,7 @@ if CATALOGS_USE_SOCIAL_GRAPH:
         def __unicode__(self):
             return "%s %s" % (self.edge_type, self.target)
 
-    class RelationAttributeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
+    class RelationAttributeRangeFilter(MultipleArgumentFilterMixin, GraphFilter):
         required_args = ['target_pk', 'min_value', 'max_value']
         arg_types = {
             'target_pk': str,
@@ -96,7 +96,7 @@ if CATALOGS_USE_SOCIAL_GRAPH:
         }
 
         def __init__(self, edge_type, target_model, attribute, children, **kwargs):
-            super(RelationAttributeRangeFilter, self).__init__(edge_type, target_model)
+            super(RelationAttributeRangeFilter, self).__init__(edge_type, target_model, **kwargs)
             self.attribute = attribute
             self.children = children
 
@@ -128,7 +128,7 @@ if CATALOGS_USE_SOCIAL_GRAPH:
                 self.args['min_value']
             )
 
-    class ChildRelationAttributeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
+    class ChildRelationAttributeRangeFilter(MultipleArgumentFilterMixin, GraphFilter):
         required_args = ['target_pk', 'min_value', 'max_value']
         arg_types = {
             'target_pk': str,
@@ -137,7 +137,7 @@ if CATALOGS_USE_SOCIAL_GRAPH:
         }
 
         def __init__(self, object_attribute, edge_type, target_model, attribute, children, **kwargs):
-            super(ChildRelationAttributeRangeFilter, self).__init__(edge_type, target_model)
+            super(ChildRelationAttributeRangeFilter, self).__init__(edge_type, target_model, **kwargs)
             self.object_attribute = object_attribute
             self.attribute = attribute
             self.children = children
@@ -169,7 +169,7 @@ if CATALOGS_USE_SOCIAL_GRAPH:
                 self.args['min_value']
             )
 
-    class RelationTimeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
+    class RelationTimeRangeFilter(MultipleArgumentFilterMixin, GraphFilter):
         required_args = ['target_pk', 'min_value', 'max_value']
         arg_types = {
             'target_pk': str,
@@ -178,7 +178,7 @@ if CATALOGS_USE_SOCIAL_GRAPH:
         }
 
         def __init__(self, edge_type, target_model, children, **kwargs):
-            super(RelationTimeRangeFilter, self).__init__(edge_type, target_model)
+            super(RelationTimeRangeFilter, self).__init__(edge_type, target_model, **kwargs)
             self.children = children
 
         def filter(self, objects, **kwargs):
@@ -210,7 +210,7 @@ if CATALOGS_USE_SOCIAL_GRAPH:
                 self.args['min_value']
             )
 
-    class ChildRelationTimeRangeFilter(GraphFilter, MultipleArgumentFilterMixin):
+    class ChildRelationTimeRangeFilter(MultipleArgumentFilterMixin, GraphFilter):
         required_args = ['target_pk', 'min_value', 'max_value']
         arg_types = {
             'target_pk': str,
@@ -219,7 +219,7 @@ if CATALOGS_USE_SOCIAL_GRAPH:
         }
 
         def __init__(self, attribute, edge_type, target_model, children, **kwargs):
-            super(ChildRelationTimeRangeFilter, self).__init__(edge_type, target_model)
+            super(ChildRelationTimeRangeFilter, self).__init__(edge_type, target_model, **kwargs)
             self.attribute = attribute
             self.children = children
 

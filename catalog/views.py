@@ -44,8 +44,12 @@ class CatalogView(ListView, FormMixin):
         for filter_name in self.filter_tray:
             filter_obj = self.filter_tray[filter_name]
             if not isinstance(filter_obj, Filter):
+                kwargs = filter_obj.setdefault('kwargs', {})
+                kwargs.update({
+                    'name': filter_name
+                })
                 filter_obj = import_by_path(filter_obj['type'])(
-                    *filter_obj.setdefault('args', []), **filter_obj.setdefault('kwargs', {})
+                    *filter_obj.setdefault('args', []), **kwargs
                 )
                 self.filter_tray[filter_name] = self.catalog_config['FILTER_TRAY'][filter_name] = filter_obj
 
@@ -152,6 +156,7 @@ class CatalogView(ListView, FormMixin):
             try:
                 result = f.filter(result, request=self.request)
                 f.applied = True
+                f.display_as = f.render(self.form)
             except (MissingFilterArgument, WrongTypeArgument):
                 pass
         # then return

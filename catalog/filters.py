@@ -13,6 +13,11 @@ class Filter(object):
     def __init__(self, **kwargs):
         super(Filter, self).__init__()
         self.applied = False
+        self.display_as = ''
+        self.name = kwargs.pop('name', None)
+        self.label = kwargs.pop('label', None)
+        self.tpl = kwargs.pop('tpl', None)
+        self.unit = kwargs.pop('unit', None)
 
     def set_args(self, *args, **kwargs):
         self.args = dict()
@@ -39,9 +44,34 @@ class Filter(object):
     def _check(self, obj, request=None):
         return True
 
+    def render(self, form=None):
+        if not form or not form.is_valid():
+            return str(self)
+        value = form.cleaned_data[self.name]
+        if hasattr(value, '__iter__'):  # it is iterable: a collection of values
+            value = ', '.join([str(item) for item in value])
+        return (self.tpl or u"%s: %s") % (form.fields[self.name].label or self.name, value)
+
 
 class MultipleArgumentFilterMixin(object):
     children = {}
+
+    def render(self, form=None):
+        if not form or not self.tpl or not form.is_valid():
+            representation = str(self)
+        else:
+            representation = self.tpl % dict(
+                [(
+                    field_name,
+                    form.cleaned_data[field_name]
+                    if not hasattr(form.cleaned_data[field_name], '__iter__')
+                    else ', '.join(
+                        [str(item) for item in form.cleaned_data[field_name]])  # it is iterable: a collection of values
+                ) for field_name, role in self.children.items()]
+            )
+        if not self.label:
+            return representation
+        return "%s: %s" % self.label, representation
 
 
 class RequestAwareFilterMixin(object):
@@ -58,7 +88,7 @@ class AttributeValueFilter(Filter):
     arg_types = {'value': str}
 
     def __init__(self, attribute, atype=str, **kwargs):
-        super(AttributeValueFilter, self).__init__()
+        super(AttributeValueFilter, self).__init__(**kwargs)
         self.attribute = attribute
         if atype != str:
             self.arg_types[self.required_args[0]] = atype
@@ -102,7 +132,7 @@ class ForeignKeyValueFilter(Filter):
     arg_types = {'value': int}
 
     def __init__(self, key, **kwargs):
-        super(ForeignKeyValueFilter, self).__init__()
+        super(ForeignKeyValueFilter, self).__init__(**kwargs)
         self.key = key
 
     def filter(self, objects, request=None):
@@ -125,7 +155,7 @@ class AttributeContainsFilter(Filter):
     arg_types = {'keyword': str}
 
     def __init__(self, attribute, case_insensitive=False, **kwargs):
-        super(AttributeContainsFilter, self).__init__()
+        super(AttributeContainsFilter, self).__init__(**kwargs)
         self.attribute = attribute
         self.insensive = case_insensitive
 
@@ -151,7 +181,7 @@ class AttributeSetContainsFilter(Filter):
     arg_types = {'keyword': str}
 
     def __init__(self, *attributes, **kwargs):
-        super(AttributeSetContainsFilter, self).__init__()
+        super(AttributeSetContainsFilter, self).__init__(**kwargs)
         self.attributes = list(attributes)
         self.insensive = kwargs.get('case_insensitive', False)
 
@@ -184,7 +214,7 @@ class AttributeMinLimitFilter(Filter):
     arg_types = {'min_value': float}
 
     def __init__(self, attribute, **kwargs):
-        super(AttributeMinLimitFilter, self).__init__()
+        super(AttributeMinLimitFilter, self).__init__(**kwargs)
         self.attribute = attribute
 
     def filter(self, objects, request=None):
@@ -207,7 +237,7 @@ class AttributeMaxLimitFilter(Filter):
     arg_types = {'max_value': float}
 
     def __init__(self, attribute, **kwargs):
-        super(AttributeMaxLimitFilter, self).__init__()
+        super(AttributeMaxLimitFilter, self).__init__(**kwargs)
         self.attribute = attribute
 
     def filter(self, objects, request=None):
@@ -225,12 +255,12 @@ class AttributeMaxLimitFilter(Filter):
         return "%s < %s" % (self.attribute, self.args['max_value'])
 
 
-class AttributeRangeFilter(Filter, MultipleArgumentFilterMixin):
+class AttributeRangeFilter(MultipleArgumentFilterMixin, Filter):
     required_args = ['min_value', 'max_value']
     arg_types = {'min_value': float, 'max_value': float}
 
     def __init__(self, attribute, children, **kwargs):
-        super(AttributeRangeFilter, self).__init__()
+        super(AttributeRangeFilter, self).__init__(**kwargs)
         self.attribute = attribute
         self.children = children
 
