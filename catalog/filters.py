@@ -2,6 +2,7 @@
 import datetime
 from django.db.models.query import QuerySet
 from django.db.models import Q
+from django.utils.encoding import force_text
 from exceptions import MissingFilterArgument, WrongTypeArgument
 
 
@@ -49,7 +50,7 @@ class Filter(object):
             return str(self)
         value = form.cleaned_data[self.name]
         if hasattr(value, '__iter__'):  # it is iterable: a collection of values
-            value = ', '.join([str(item) for item in value])
+            value = ', '.join([force_text(item) for item in value])
         return (self.tpl or u"%s: %s") % (form.fields[self.name].label or self.name, value)
 
 
@@ -66,12 +67,12 @@ class MultipleArgumentFilterMixin(object):
                     form.cleaned_data[field_name]
                     if not hasattr(form.cleaned_data[field_name], '__iter__')
                     else ', '.join(
-                        [str(item) for item in form.cleaned_data[field_name]])  # it is iterable: a collection of values
+                        [force_text(item) for item in form.cleaned_data[field_name]])  # it is iterable: a collection of values
                 ) for field_name, role in self.children.items()]
             )
         if not self.label:
             return representation
-        return "%s: %s" % (self.label, representation)
+        return "%s: %s" % (force_text(self.label), representation)
 
 
 class RequestAwareFilterMixin(object):

@@ -16,6 +16,9 @@ The component integrates nicely with django-social-graph
 
 Changelog
 =========
+1.1.2
+-----
+- Forcing text before displaying applied filters.
 
 1.1.1
 -----
