@@ -71,7 +71,7 @@ class MultipleArgumentFilterMixin(object):
             )
         if not self.label:
             return representation
-        return "%s: %s" % self.label, representation
+        return "%s: %s" % (self.label, representation)
 
 
 class RequestAwareFilterMixin(object):

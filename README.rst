@@ -17,6 +17,10 @@ The component integrates nicely with django-social-graph
 Changelog
 =========
 
+1.1.1
+-----
+- Fix in support for friendly display of applied filters.
+
 1.1.0
 -----
 - Support for friendly display of applied filters.
