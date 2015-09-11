@@ -3,6 +3,7 @@ import datetime
 from django.db.models.query import QuerySet
 from django.db.models import Q
 from django.utils.encoding import force_text
+from django.utils.translation import ugettext_lazy as _
 from exceptions import MissingFilterArgument, WrongTypeArgument
 
 
@@ -284,19 +285,23 @@ class DateMixin(object):
     options = {
         'today': {
             'input': (1, '1'),
-            'days_back': None
+            'days_back': None,
+            'display_as': _(u'today')
         },
         'yesterday': {
             'input': (2, '2'),
-            'days_back': 1
+            'days_back': 1,
+            'display_as': _(u'yesterday')
         },
         'last_week': {
             'input': (3, '3'),
-            'days_back': 7
+            'days_back': 7,
+            'display_as': _(u'last week')
         },
         'last_month': {
             'input': (4, '4'),
-            'days_back': 30
+            'days_back': 30,
+            'display_as': _(u'last month')
         }
     }
 
@@ -319,6 +324,17 @@ class DateMixin(object):
             except ValueError:
                 raise WrongTypeArgument("%s argument can not be cast to %s" % (arg, self.arg_types[arg]))
 
+    def render(self, form=None):
+        if not form or not form.is_valid():
+            return str(self)
+        value = form.cleaned_data[self.name]
+        for key, option in self.options.items():
+            if value in option['input']:
+                return (self.tpl or u"%s: %s") % (
+                    form.fields[self.name].label or self.name, option.setdefault('display_as', key)
+                )
+        return (self.tpl or u"%s: %s") % (form.fields[self.name].label or self.name, value)
+
 
 class DateAttributeMinLimitFilter(DateMixin, AttributeMinLimitFilter):
     arg_types = {'min_value': datetime.date}
@@ -330,4 +346,3 @@ class DateAttributeMaxLimitFilter(DateMixin, AttributeMaxLimitFilter):
 
 class DateAttributeRangeFilter(DateMixin, AttributeRangeFilter):
     arg_types = {'min_value': datetime.date, 'max_value': datetime.date}
-

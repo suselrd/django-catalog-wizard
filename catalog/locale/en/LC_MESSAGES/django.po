@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-23 18:38-0500\n"
+"POT-Creation-Date: 2015-09-11 14:00-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,11 +17,27 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: graph_filters.py:188 graph_filters.py:225
+#: filters.py:289
+msgid "today"
+msgstr ""
+
+#: filters.py:294
+msgid "yesterday"
+msgstr ""
+
+#: filters.py:299
+msgid "last week"
+msgstr ""
+
+#: filters.py:304
+msgid "last month"
+msgstr ""
+
+#: graph_filters.py:207 graph_filters.py:249
 msgid "from"
 msgstr ""
 
-#: graph_filters.py:190 graph_filters.py:227
+#: graph_filters.py:209 graph_filters.py:251
 msgid "to"
 msgstr ""
 
@@ -57,7 +73,7 @@ msgstr ""
 msgid "Search Logs"
 msgstr ""
 
-#: views.py:133
+#: views.py:139
 #, python-format
 msgid "Empty list and '%(class_name)s.allow_empty' is False."
 msgstr ""

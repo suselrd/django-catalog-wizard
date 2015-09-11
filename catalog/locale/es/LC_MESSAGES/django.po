@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-23 18:38-0500\n"
+"POT-Creation-Date: 2015-09-11 14:00-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,11 +18,27 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: graph_filters.py:188 graph_filters.py:225
+#: filters.py:289
+msgid "today"
+msgstr "hoy"
+
+#: filters.py:294
+msgid "yesterday"
+msgstr "ayer"
+
+#: filters.py:299
+msgid "last week"
+msgstr "última semana"
+
+#: filters.py:304
+msgid "last month"
+msgstr "último mes"
+
+#: graph_filters.py:207 graph_filters.py:249
 msgid "from"
 msgstr "de"
 
-#: graph_filters.py:190 graph_filters.py:227
+#: graph_filters.py:209 graph_filters.py:251
 msgid "to"
 msgstr "a"
 
@@ -58,7 +74,7 @@ msgstr "Registro de Búsqueda"
 msgid "Search Logs"
 msgstr "Registros de Búsqueda"
 
-#: views.py:133
+#: views.py:139
 #, python-format
 msgid "Empty list and '%(class_name)s.allow_empty' is False."
 msgstr "Lista vacía y '%(class_name)s.allow_empty' es Falso."
