@@ -212,7 +212,7 @@ class CatalogView(ListView, FormMixin):
             context = super(CatalogView, self).get_context_data(**kwargs)  # includes pagination stuff
 
         context.update({
-            'applied_filters': [f for f in self.filters if f.applied],
+            'applied_filters': dict([(f.display_as, f) for f in self.filters if f.applied]),
             'result_count': self.object_list.count() if isinstance(self.object_list, QuerySet) else len(self.object_list),
             'request_dict': self.request_dict,
             'query_string': self.request_dict.urlencode(),

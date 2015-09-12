@@ -16,6 +16,10 @@ The component integrates nicely with django-social-graph
 
 Changelog
 =========
+1.1.5
+-----
+- Returned applied filters in a dict instead of a list, using 'display_as' strings as keys.
+
 1.1.4
 -----
 - Marked fixed filters with a fixed value of True, allowing different treatment of applied filters.
