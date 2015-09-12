@@ -155,6 +155,7 @@ class CatalogView(ListView, FormMixin):
         for f in self.filters:
             try:
                 result = f.filter(result, request=self.request)
+                f.fixed = f.name in self.fixed_filters.keys()
                 f.applied = True
                 f.display_as = f.render(self.form)
             except (MissingFilterArgument, WrongTypeArgument):
