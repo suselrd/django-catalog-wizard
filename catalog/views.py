@@ -1,7 +1,7 @@
 # coding=utf-8
 from copy import copy
 from django.db.models.query import QuerySet
-from django.http import Http404
+from django.http import Http404, QueryDict
 from django.utils.translation import ugettext as _
 from django.utils.module_loading import import_by_path
 from django.views.generic.edit import FormMixin
@@ -146,6 +146,30 @@ class CatalogView(ListView, FormMixin):
 
     def post(self, request, *args, **kwargs):
         return self.get(request, *args, **kwargs)
+
+    def process_filters(self, querystring):
+        self.complete_request_dict = QueryDict(querystring, mutable=True)
+        self.complete_request_dict.update(self.get_fixed_filters())
+
+        # instantiate form
+        form_class = self.get_form_class()
+        if form_class:
+            self.form = self.get_form(form_class)
+        else:
+            self.form = None
+
+        # get valid filters
+        filters = {}
+        for f in self.filters:
+            try:
+                f._check_args()
+                f.display_as = f.render(self.form)
+                filters.update({
+                    f.display_as: f
+                })
+            except (MissingFilterArgument, WrongTypeArgument):
+                pass
+        return filters
 
     def get_queryset(self):
         result = super(CatalogView, self).get_queryset().order_by()  # remove previous ordering

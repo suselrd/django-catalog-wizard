@@ -5,7 +5,7 @@ setup(
     url="http://github.com/suselrd/django-catalog-wizard/",
     author="Susel Ruiz Duran",
     author_email="suselrd@gmail.com",
-    version="1.1.5",
+    version="1.1.6",
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
