@@ -38,9 +38,12 @@ class CatalogView(ListView, FormMixin):
         return self.fixed_filters
 
     def get_form_kwargs(self):
-        """
-        Returns the keyword arguments for instantiating the form.
-        """
+        return {
+            'initial': self.get_initial(),
+            'data': self.complete_request_dict
+        }
+
+    def load_filters(self):
         for filter_name in self.filter_tray:
             filter_obj = self.filter_tray[filter_name]
             if not isinstance(filter_obj, Filter):
@@ -71,6 +74,7 @@ class CatalogView(ListView, FormMixin):
                     filter_obj.set_args(value)
                     self.filters.add_filter(filter_obj)
 
+    def load_sorter(self):
         if self.order_field:
             sorter_name = self.kwargs.setdefault(
                 'order_by',  # first from URL kwargs
@@ -85,11 +89,6 @@ class CatalogView(ListView, FormMixin):
                     *self.sorter.setdefault('args', []), **self.sorter.setdefault('kwargs', {})
                 )
 
-        return {
-            'initial': self.get_initial(),
-            'data': self.complete_request_dict
-        }
-
     def get(self, request, *args, **kwargs):
         # get REQUEST dict
         self.request_dict = copy(request.GET) if len(request.GET) else copy(request.POST)
@@ -98,6 +97,10 @@ class CatalogView(ListView, FormMixin):
         # create a copy of the request_dict, for add the fixed filters to it
         self.complete_request_dict = copy(self.request_dict)
         self.complete_request_dict.update(self.get_fixed_filters())
+
+        # load filters and sorter
+        self.load_filters()
+        self.load_sorter()
 
         # instantiate form
         form_class = self.get_form_class()
@@ -150,6 +153,9 @@ class CatalogView(ListView, FormMixin):
     def process_filters(self, querystring):
         self.complete_request_dict = QueryDict(querystring, mutable=True)
         self.complete_request_dict.update(self.get_fixed_filters())
+
+        # load filters
+        self.load_filters()
 
         # instantiate form
         form_class = self.get_form_class()

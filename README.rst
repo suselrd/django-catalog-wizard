@@ -16,6 +16,10 @@ The component integrates nicely with django-social-graph
 
 Changelog
 =========
+1.1.7
+-----
+- Some improvements in filters rendering and catalog views logic.
+
 1.1.6
 -----
 - Added new method 'process_filters' to CatalogView, to process and render filters from a queryset, without making any actual search.

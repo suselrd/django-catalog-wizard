@@ -50,6 +50,11 @@ class Filter(object):
         if not form or not form.is_valid():
             return str(self)
         value = form.cleaned_data[self.name]
+        if hasattr(form.fields[self.name], 'choices'):  # it is a choice field
+            for key, text in form.fields[self.name].choices:
+                if value == key:
+                    value = force_text(text)
+                    break
         if hasattr(value, '__iter__'):  # it is iterable: a collection of values
             value = ', '.join([force_text(item) for item in value])
         return (self.tpl or u"%s: %s") % (form.fields[self.name].label or self.name, value)
@@ -107,7 +112,7 @@ class AttributeValueFilter(Filter):
         return getattr(obj, self.attribute) == self.args['value']
 
     def __unicode__(self):
-        return "%s: %s" % (self.attribute, self.args['value'])
+        return u"%s: %s" % (self.attribute, self.args['value'])
 
 
 class BoolAttributeValueFilter(AttributeValueFilter):
@@ -128,28 +133,35 @@ class BoolAttributeValueFilter(AttributeValueFilter):
             except ValueError:
                 raise WrongTypeArgument("%s argument can not be cast to %s" % (arg, self.arg_types[arg]))
 
+    def render(self, form=None):
+        if not form or not form.is_valid():
+            return str(self)
+        value = form.cleaned_data[self.name]
+        value = _(u'Yes') if value else _(u'No')
+        return (self.tpl or u"%s: %s") % (form.fields[self.name].label or self.name, value)
+
 
 class ForeignKeyValueFilter(Filter):
     required_args = ['value']
     arg_types = {'value': int}
 
-    def __init__(self, key, **kwargs):
+    def __init__(self, attribute, **kwargs):
         super(ForeignKeyValueFilter, self).__init__(**kwargs)
-        self.key = key
+        self.attribute = attribute
 
     def filter(self, objects, request=None):
         if isinstance(objects, QuerySet):
             self._check_args()
             return objects.complex_filter({
-                "%s__exact" % self.key: self.args['value']
+                "%s__exact" % self.attribute: self.args['value']
             })
         return super(ForeignKeyValueFilter, self).filter(objects)
 
     def _check(self, obj, request=None):
-        return getattr(obj, self.key) == self.args['value']
+        return getattr(obj, self.attribute) == self.args['value']
 
     def __unicode__(self):
-        return "%s: %s" % (self.key, self.args['value'])
+        return u"%s: %s" % (self.attribute, self.args['value'])
 
 
 class AttributeContainsFilter(Filter):
@@ -159,12 +171,12 @@ class AttributeContainsFilter(Filter):
     def __init__(self, attribute, case_insensitive=False, **kwargs):
         super(AttributeContainsFilter, self).__init__(**kwargs)
         self.attribute = attribute
-        self.insensive = case_insensitive
+        self.insensitive = case_insensitive
 
     def filter(self, objects, request=None):
         if isinstance(objects, QuerySet):
             self._check_args()
-            if self.insensive:
+            if self.insensitive:
                 lookup_dict = {"%s__icontains" % self.attribute: self.args['keyword']}
             else:
                 lookup_dict = {"%s__contains" % self.attribute: self.args['keyword']}
@@ -175,7 +187,7 @@ class AttributeContainsFilter(Filter):
         return str(getattr(obj, self.attribute)).lower().find(self.args['keyword'].lower()) >= 0
 
     def __unicode__(self):
-        return "%s" % (self.args['keyword'])
+        return u"%s" % (self.args['keyword'])
 
 
 class AttributeSetContainsFilter(Filter):
@@ -208,7 +220,7 @@ class AttributeSetContainsFilter(Filter):
         return False
 
     def __unicode__(self):
-        return "%s" % (self.args['keyword'])
+        return u"%s" % (self.args['keyword'])
 
 
 class AttributeMinLimitFilter(Filter):
@@ -231,7 +243,7 @@ class AttributeMinLimitFilter(Filter):
         return self.args['min_value'] <= getattr(obj, self.attribute)
 
     def __unicode__(self):
-        return "%s > %s" % (self.attribute, self.args['min_value'])
+        return u"%s > %s" % (self.attribute, self.args['min_value'])
 
 
 class AttributeMaxLimitFilter(Filter):
@@ -254,7 +266,7 @@ class AttributeMaxLimitFilter(Filter):
         return getattr(obj, self.attribute) <= self.args['max_value']
 
     def __unicode__(self):
-        return "%s < %s" % (self.attribute, self.args['max_value'])
+        return u"%s < %s" % (self.attribute, self.args['max_value'])
 
 
 class AttributeRangeFilter(MultipleArgumentFilterMixin, Filter):
@@ -278,7 +290,7 @@ class AttributeRangeFilter(MultipleArgumentFilterMixin, Filter):
         return self.args['min_value'] <= getattr(obj, self.attribute) <= self.args['max_value']
 
     def __unicode__(self):
-        return "%s > %s > %s" % (self.args['max_value'], self.attribute, self.args['min_value'])
+        return u"%s > %s > %s" % (self.args['max_value'], self.attribute, self.args['min_value'])
 
 
 class DateMixin(object):
