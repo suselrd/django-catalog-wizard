@@ -16,6 +16,10 @@ The component integrates nicely with django-social-graph
 
 Changelog
 =========
+1.1.8
+-----
+- Fix encoding issue.
+
 1.1.7
 -----
 - Some improvements in filters rendering and catalog views logic.

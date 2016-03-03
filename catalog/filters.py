@@ -48,7 +48,7 @@ class Filter(object):
 
     def render(self, form=None):
         if not form or not form.is_valid():
-            return str(self)
+            return u"%s" % self
         value = form.cleaned_data[self.name]
         if hasattr(form.fields[self.name], 'choices'):  # it is a choice field
             for key, text in form.fields[self.name].choices:
@@ -56,7 +56,7 @@ class Filter(object):
                     value = force_text(text)
                     break
         if hasattr(value, '__iter__'):  # it is iterable: a collection of values
-            value = ', '.join([force_text(item) for item in value])
+            value = u', '.join([force_text(item) for item in value])
         return (self.tpl or u"%s: %s") % (form.fields[self.name].label or self.name, value)
 
 
@@ -65,20 +65,20 @@ class MultipleArgumentFilterMixin(object):
 
     def render(self, form=None):
         if not form or not self.tpl or not form.is_valid():
-            representation = str(self)
+            representation = u"%s" % self
         else:
             representation = self.tpl % dict(
                 [(
                     field_name,
                     form.cleaned_data[field_name]
                     if not hasattr(form.cleaned_data[field_name], '__iter__')
-                    else ', '.join(
+                    else u', '.join(
                         [force_text(item) for item in form.cleaned_data[field_name]])  # it is iterable: a collection of values
                 ) for field_name, role in self.children.items()]
             )
         if not self.label:
             return representation
-        return "%s: %s" % (force_text(self.label), representation)
+        return u"%s: %s" % (force_text(self.label), representation)
 
 
 class RequestAwareFilterMixin(object):
@@ -135,7 +135,7 @@ class BoolAttributeValueFilter(AttributeValueFilter):
 
     def render(self, form=None):
         if not form or not form.is_valid():
-            return str(self)
+            return u"%s" % self
         value = form.cleaned_data[self.name]
         value = _(u'Yes') if value else _(u'No')
         return (self.tpl or u"%s: %s") % (form.fields[self.name].label or self.name, value)
@@ -338,7 +338,7 @@ class DateMixin(object):
 
     def render(self, form=None):
         if not form or not form.is_valid():
-            return str(self)
+            return u"%s" % self
         value = form.cleaned_data[self.name]
         for key, option in self.options.items():
             if value in option['input']:
