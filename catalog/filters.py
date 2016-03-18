@@ -4,7 +4,7 @@ from django.db.models.query import QuerySet
 from django.db.models import Q
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
-from exceptions import MissingFilterArgument, WrongTypeArgument
+from .exceptions import MissingFilterArgument, WrongTypeArgument
 
 
 class Filter(object):
@@ -72,8 +72,8 @@ class MultipleArgumentFilterMixin(object):
                     field_name,
                     form.cleaned_data[field_name]
                     if not hasattr(form.cleaned_data[field_name], '__iter__')
-                    else u', '.join(
-                        [force_text(item) for item in form.cleaned_data[field_name]])  # it is iterable: a collection of values
+                    else u', '.join(  # it is iterable: a collection of values
+                        [force_text(item) for item in form.cleaned_data[field_name]])
                 ) for field_name, role in self.children.items()]
             )
         if not self.label:

@@ -2,9 +2,9 @@
 from django.conf.urls import patterns, url
 from django.views.generic import DetailView
 from catalog.views import CatalogView
-from models import PropertyPublication, Test
-from forms import FilterForm
-from views import PropertySalesCatalogView
+from .models import PropertyPublication, Test
+from .forms import FilterForm
+from .views import PropertySalesCatalogView
 
 
 urlpatterns = patterns(
@@ -37,5 +37,3 @@ urlpatterns = patterns(
         name="test_detail"
     ),
 )
-
-

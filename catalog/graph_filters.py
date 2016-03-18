@@ -1,23 +1,28 @@
 # coding=utf-8
 from . import CATALOGS_USE_SOCIAL_GRAPH
 if CATALOGS_USE_SOCIAL_GRAPH:
-    from django.utils.module_loading import import_by_path
+
     from django.utils.translation import ugettext_lazy as _
-    from social_graph import Graph, EdgeTypeAssociation, EdgeType
     from .filters import Filter, MultipleArgumentFilterMixin
 
     def inverse(et):
+        from social_graph.models import EdgeTypeAssociation
         return EdgeTypeAssociation.objects.get_for_direct_edge_type(et).inverse
 
     class GraphFilter(Filter):
 
         def __init__(self, edge_type, target_model, **kwargs):
             super(GraphFilter, self).__init__(**kwargs)
+
+            from social_graph import Graph
+            from social_graph.models import EdgeType
+
             self.graph = Graph()
             self.edge_type = EdgeType.objects.get(name=edge_type)
             self.inverse_edge_type = inverse(self.edge_type)
 
             if not callable(target_model):
+                from django.utils.module_loading import import_by_path
                 self.target_model = import_by_path(target_model)
             else:
                 self.target_model = target_model
@@ -54,7 +59,7 @@ if CATALOGS_USE_SOCIAL_GRAPH:
             return list(subset)
 
         def __unicode__(self):
-            return "%s %s" % (self.edge_type, self.target)
+            return u"%s %s" % (self.edge_type, self.target)
 
     class ChildRelationExistenceFilter(GraphFilter):
         required_args = ['target_pk']
@@ -85,7 +90,7 @@ if CATALOGS_USE_SOCIAL_GRAPH:
             return [obj for obj in objects if getattr(obj, self.attribute) in subset]
 
         def __unicode__(self):
-            return "%s %s" % (self.edge_type, self.target)
+            return u"%s %s" % (self.edge_type, self.target)
 
     class RelationAttributeRangeFilter(MultipleArgumentFilterMixin, GraphFilter):
         required_args = ['target_pk', 'min_value', 'max_value']
@@ -120,7 +125,7 @@ if CATALOGS_USE_SOCIAL_GRAPH:
             return list(subset)
 
         def __unicode__(self):
-            return "%s %s (%s < %s < %s)" % (
+            return u"%s %s (%s < %s < %s)" % (
                 self.edge_type,
                 self.target,
                 self.args['min_value'],
@@ -161,7 +166,7 @@ if CATALOGS_USE_SOCIAL_GRAPH:
             return [obj for obj in objects if getattr(obj, self.object_attribute) in subset]
 
         def __unicode__(self):
-            return "%s %s (%s < %s < %s)" % (
+            return u"%s %s (%s < %s < %s)" % (
                 self.edge_type,
                 self.target,
                 self.args['min_value'],
@@ -201,12 +206,12 @@ if CATALOGS_USE_SOCIAL_GRAPH:
             return list(subset)
 
         def __unicode__(self):
-            return "%s %s (%s %s %s %s)" % (
+            return u"%s %s (%s %s %s %s)" % (
                 self.edge_type,
                 self.target,
-                _('from'),
+                _(u'from'),
                 self.args['min_value'],
-                _('to'),
+                _(u'to'),
                 self.args['min_value']
             )
 
@@ -243,11 +248,11 @@ if CATALOGS_USE_SOCIAL_GRAPH:
             return [obj for obj in objects if getattr(obj, self.attribute) in subset]
 
         def __unicode__(self):
-            return "%s %s (%s %s %s %s)" % (
+            return u"%s %s (%s %s %s %s)" % (
                 self.edge_type,
                 self.target,
-                _('from'),
+                _(u'from'),
                 self.args['min_value'],
-                _('to'),
+                _(u'to'),
                 self.args['min_value']
             )

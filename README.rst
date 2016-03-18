@@ -16,6 +16,10 @@ The component integrates nicely with django-social-graph
 
 Changelog
 =========
+2.0.0
+-----
+- Upgraded django-social-graph to version 3.0.0.
+
 1.1.8
 -----
 - Fix encoding issue.

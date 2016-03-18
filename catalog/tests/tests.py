@@ -1,19 +1,22 @@
 # coding=utf-8
-import datetime
 import time
 from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
-from social_graph import EdgeType, Graph
-from models import PropertyPublication
+from django.utils.timezone import now
+
+from .models import PropertyPublication
 
 
 class TestCatalog(TestCase):
     fixtures = ['test_data.json']
 
     def setUp(self):
-        self.time0 = datetime.datetime.now()
+        from social_graph import Graph
+        from social_graph.models import EdgeType
+        
+        self.time0 = now()
         self.user = User.objects.get(pk=1)
         self.user2 = User.objects.get(pk=2)
         self.user3 = User.objects.get(pk=3)
@@ -295,7 +298,7 @@ class TestCatalog(TestCase):
         data = {
             'liked_by_target': "1",
             'liked_by_from': time.mktime(self.time0.timetuple()),
-            'liked_by_to':  time.mktime(datetime.datetime.now().timetuple())
+            'liked_by_to':  time.mktime(now().timetuple())
         }
         response = c.get(reverse('property_catalog', kwargs={
             'view_type': 'grid',
@@ -309,7 +312,7 @@ class TestCatalog(TestCase):
         data = {
             'liked_by_target': "1,2",
             'liked_by_from': time.mktime(self.time0.timetuple()),
-            'liked_by_to':  time.mktime(datetime.datetime.now().timetuple())
+            'liked_by_to':  time.mktime(now().timetuple())
         }
         response = c.get(reverse('property_catalog', kwargs={
             'view_type': 'grid',
@@ -322,7 +325,7 @@ class TestCatalog(TestCase):
         data = {
             'liked_by_target': "1,3",
             'liked_by_from': time.mktime(self.time0.timetuple()),
-            'liked_by_to':  time.mktime(datetime.datetime.now().timetuple())
+            'liked_by_to':  time.mktime(now().timetuple())
         }
         response = c.get(reverse('property_catalog', kwargs={
             'view_type': 'grid',
@@ -391,7 +394,7 @@ class TestModelTemplatesDecorator(TestCase):
     fixtures = ['test_data_without_context_templates.json']
 
     def setUp(self):
-        from models import Test
+        from .models import Test
         self.user = User.objects.get(pk=1)
         self.user2 = User.objects.get(pk=2)
         self.user3 = User.objects.get(pk=3)
@@ -405,5 +408,3 @@ class TestModelTemplatesDecorator(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('object', response.context_data)
         self.assertHTMLEqual("tests/grid.html", response.content)
-
-

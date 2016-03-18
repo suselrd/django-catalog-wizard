@@ -1,34 +1,28 @@
 # coding=utf-8
-from types import MethodType
 from django.core.exceptions import ImproperlyConfigured
-from views import CatalogView
-from . import MODEL_CONTEXT_TEMPLATES
-from models import ModelContextTemplate, SearchLog
 
 
 def catalogue_enabled_templates(templates=None):
     def decorator(cls):
-        tpls = templates or {}
-        if not isinstance(tpls, dict):
+        from .models import ModelContextTemplate, MODEL_CONTEXT_TEMPLATES_CACHE
+
+        template_list = templates or {}
+        if not isinstance(template_list, dict):
             raise ImproperlyConfigured("templates argument must be a dict.")
-        for view_type, template in tpls.items():
-            MODEL_CONTEXT_TEMPLATES.setdefault(str(cls._meta), {}).update({
-                view_type: template
+
+        for v_type, template in template_list.items():
+            MODEL_CONTEXT_TEMPLATES_CACHE.setdefault(str(cls._meta), {}).update({
+                v_type: template
             })
 
         def get_object_template(self, view_type):
-            template = MODEL_CONTEXT_TEMPLATES.setdefault(str(self._meta), {}).get(view_type, None)
-            if not template:
-                try:
-                    template = ModelContextTemplate.objects.get(
-                        model=str(self._meta),
-                        context=view_type
-                    ).template
-                    MODEL_CONTEXT_TEMPLATES.get(str(self._meta)).setdefault(view_type, template)
-                except ModelContextTemplate.DoesNotExist:
-                    return "catalog/no_template.html"
-            return template
+            mdt = ModelContextTemplate.objects.get_by_natural_key(
+                model=str(self._meta),
+                context=view_type
+            )
+            return mdt.template if mdt else "catalog/no_template.html"
 
+        from types import MethodType
         setattr(cls, 'get_object_template', MethodType(get_object_template, cls))
         return cls
     return decorator
@@ -38,6 +32,9 @@ catalogue_enabled = catalogue_enabled_templates()
 
 
 def log_search(cls):
+    from .models import SearchLog
+    from .views import CatalogView
+
     if not issubclass(cls, CatalogView):
         raise ImproperlyConfigured("Only descendants of CatalogView are suitable for search logging.")
 

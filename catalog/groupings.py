@@ -26,7 +26,7 @@ class Grouping(object):
         """
         Overwriting methods must return a string
         """
-        return '%s' % group[self.attribute]
+        return u'%s' % group[self.attribute]
 
     def get_group_by_name(self):
         """
@@ -155,7 +155,7 @@ class DateTimeMixin(object):
 
 class DateAttributeValueGrouping(AttributeValueGrouping):
     group_by = 'day'
-    output_format = 'j F Y'
+    output_format = u'j F Y'
     attribute_aliases = ['date']
 
     def get_lookup_dict(self, group):
@@ -184,7 +184,7 @@ class DateAttributeValueGrouping(AttributeValueGrouping):
         ]
 
     def get_group_name(self, group):
-        return '%s' % (dateformat.DateFormat(group[self.attribute]).format(self.output_format))
+        return u'%s' % (dateformat.DateFormat(group[self.attribute]).format(self.output_format))
 
 
 class DateTimeAttributeValueGrouping(DateTimeMixin, DateAttributeValueGrouping):
@@ -193,7 +193,7 @@ class DateTimeAttributeValueGrouping(DateTimeMixin, DateAttributeValueGrouping):
 
 class DateAttributeMonthValueGrouping(DateAttributeValueGrouping):
     group_by = 'month'
-    output_format = 'F Y'
+    output_format = u'F Y'
 
     def get_lookup_dict(self, group):
         return {
@@ -208,7 +208,7 @@ class DateTimeAttributeMonthValueGrouping(DateTimeMixin, DateAttributeMonthValue
 
 class DateAttributeYearValueGrouping(DateAttributeValueGrouping):
     group_by = 'year'
-    output_format = 'Y'
+    output_format = u'Y'
 
     def get_lookup_dict(self, group):
         return {

@@ -15,7 +15,7 @@ DATABASES = {
 
 CACHES = {
     'default': {
-        'BACKEND': 'redis_cache.RedisCache',
+        'BACKEND': 'social_graph.cache_backend.ExtendedRedisCache',
         'LOCATION': '127.0.0.1:6379',
     },
 }
@@ -24,8 +24,8 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sites',
-    'catalog',
-    'catalog.tests',
+    'catalog.apps.CatalogConfig',
+    'catalog.tests.apps.CatalogTestsConfig',
     # comment the following line if you don't want to work with django-social-graph
     'social_graph'
 ]

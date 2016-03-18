@@ -3,15 +3,20 @@ from copy import copy
 from django.db.models.query import QuerySet
 from django.http import Http404, QueryDict
 from django.utils.translation import ugettext as _
-from django.utils.module_loading import import_by_path
+try:
+    from django.utils.module_loading import import_by_path
+except ImportError:
+    from django.utils.module_loading import import_string as import_by_path
+
 from django.views.generic.edit import FormMixin
 from django.views.generic.list import ListView
+
 from . import CATALOGS
-from filters import Filter, MultipleArgumentFilterMixin
-from filter_sets import FilterSet
-from groupings import Grouping
-from sorters import Sorter
-from exceptions import MissingFilterArgument, WrongTypeArgument
+from .filters import Filter, MultipleArgumentFilterMixin
+from .filter_sets import FilterSet
+from .groupings import Grouping
+from .sorters import Sorter
+from .exceptions import MissingFilterArgument, WrongTypeArgument
 
 
 class CatalogView(ListView, FormMixin):
@@ -109,7 +114,7 @@ class CatalogView(ListView, FormMixin):
         else:
             self.form = None
 
-        #get view_type
+        # get view_type
         try:
             view_type = self.kwargs['view_type']
             if view_type in self.catalog_config['VIEW_TYPES']:

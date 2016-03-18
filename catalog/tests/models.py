@@ -1,7 +1,7 @@
 # coding=utf-8
 from django.contrib.auth.models import User
 from django.db import models
-from ..decorators import catalogue_enabled, catalogue_enabled_templates
+from catalog.decorators import catalogue_enabled, catalogue_enabled_templates
 
 
 class Property(models.Model):
@@ -25,8 +25,8 @@ class PropertyPublication(models.Model):
     details = models.TextField(max_length=5000, null=True)
     price = models.DecimalField(max_digits=15, decimal_places=2)
     status = models.CharField(max_length=10, choices=[(1, "PUBLIC"), (2, "PRIVATE")])
-    created = models.DateField()
-    modified = models.DateTimeField(auto_now_add=True)
+    created = models.DateField(auto_now_add=True, blank=True)
+    modified = models.DateTimeField(auto_now=True, blank=True)
 
     def comments_aggregation(self):
         pass

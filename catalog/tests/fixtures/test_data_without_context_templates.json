@@ -58,7 +58,9 @@
             "operation_type" : 1,
             "details": "bla bla bla",
             "price": 10000,
-            "status": "PUBLIC"
+            "status": "PUBLIC",
+            "created": "2000-12-12",
+            "modified": "2000-12-12 10:10:00"
         }
     },
     {
@@ -69,7 +71,9 @@
             "operation_type" : 2,
             "details": "otro otro otro",
             "price": 500,
-            "status": "PRIVATE"
+            "status": "PRIVATE",
+            "created": "2000-12-12",
+            "modified": "2000-12-12 10:10:00"
         }
     },
     {

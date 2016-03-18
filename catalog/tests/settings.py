@@ -15,7 +15,7 @@ DATABASES = {
 
 CACHES = {
     'default': {
-        'BACKEND': 'redis_cache.RedisCache',
+        'BACKEND': 'social_graph.cache_backend.ExtendedRedisCache',
         'LOCATION': '127.0.0.1:6379',
     },
 }
@@ -204,7 +204,7 @@ ROOT_URLCONF = 'catalog.tests.urls'
 
 CATALOGS_USE_SOCIAL_GRAPH = True
 
-#required in django < 1.7 by catalog
+# required in django < 1.7 by catalog
 SOUTH_MIGRATION_MODULES = {
     'catalog': 'catalog.south_migrations',
 }

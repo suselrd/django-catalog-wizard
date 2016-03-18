@@ -7,5 +7,3 @@ CATALOGS_USE_SOCIAL_GRAPH = getattr(settings, 'CATALOGS_USE_SOCIAL_GRAPH', False
 
 if CATALOGS is None:
     raise ImproperlyConfigured("CATALOGS setting is missing")
-
-MODEL_CONTEXT_TEMPLATES = {}
