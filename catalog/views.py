@@ -103,16 +103,16 @@ class CatalogView(ListView, FormMixin):
         self.complete_request_dict = copy(self.request_dict)
         self.complete_request_dict.update(self.get_fixed_filters())
 
-        # load filters and sorter
-        self.load_filters()
-        self.load_sorter()
-
         # instantiate form
         form_class = self.get_form_class()
         if form_class:
             self.form = self.get_form(form_class)
         else:
             self.form = None
+
+        # load filters and sorter
+        self.load_filters()
+        self.load_sorter()
 
         # get view_type
         try:
